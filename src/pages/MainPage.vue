@@ -1,24 +1,30 @@
 <template>
-  <div class="container">
-    <h1 class="title">Main Page</h1>
+  <div class="container mt-4">
+    <div class="row">
+      <!-- Left column: Explore Recipes -->
+      <div class="col-md-8">
+        <h3>Explore This Recipes</h3>
+        <RecipePreviewList class="RandomRecipes" ref="exploreList" title="Random Recipes"/>
 
-    <RecipePreviewList title="Random Recipes" class="RandomRecipes center" />
+        <div class="text-center mt-3">
+          <button class="btn btn-secondary" @click="refreshExplore">More</button>
+        </div>
+      </div>
 
-    <div v-if="!store.username" class="text-center mt-4">
-      <router-link :to="{ name: 'login' }">
-        <button class="btn btn-primary">You need to Login to view this</button>
-      </router-link>
+      <!-- Right column: Last Viewed or Login Prompt -->
+      <div class="col-md-4">
+        <div v-if="store.username">
+          <h3>Last Watched Recipes</h3>
+          <RecipePreviewList class="RandomRecipes" ref="lastViewedList" type="last-viewed" />
+        </div>
+        <div v-else class="text-center mt-4">
+          <p>You must be logged in to see your viewed recipes.</p>
+          <router-link :to="{ name: 'login' }">
+            <button class="btn btn-primary">Login</button>
+          </router-link>
+        </div>
+      </div>
     </div>
-
-    <RecipePreviewList
-      title="Last Viewed Recipes"
-      :class="{
-        RandomRecipes: true,
-        blur: !store.username,
-        center: true
-      }"
-      disabled
-    />
   </div>
 </template>
 
@@ -34,21 +40,20 @@ export default {
     const internalInstance = getCurrentInstance();
     const store = internalInstance.appContext.config.globalProperties.store;
 
-    return { store };
+    const refreshExplore = () => {
+      internalInstance.refs.exploreList.updateRecipes();
+    };
+
+    return {
+      store,
+      refreshExplore
+    };
   }
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .RandomRecipes {
-  margin: 10px 0 10px;
-}
-.blur {
-  -webkit-filter: blur(5px); /* Safari 6.0 - 9.0 */
-  filter: blur(2px);
-}
-::v-deep .blur .recipe-preview {
-  pointer-events: none;
-  cursor: default;
+  margin: 10px 0;
 }
 </style>

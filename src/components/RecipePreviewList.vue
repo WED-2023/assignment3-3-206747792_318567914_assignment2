@@ -1,33 +1,33 @@
 <template>
-  <b-container>
-    <h3>
-      {{ title }}:
-      <slot></slot>
-    </h3>
-    <b-row>
-      <b-col v-for="r in recipes" :key="r.id">
+  <div class="container">
+    <h3>{{ title }}</h3>
+
+    <div class="row">
+      <div class="col" v-for="r in recipes" :key="r.id">
         <RecipePreview class="recipePreview" :recipe="r" />
-      </b-col>
-    </b-row>
-  </b-container>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
+import axios from 'axios';
 import RecipePreview from "./RecipePreview.vue";
+
 export default {
   name: "RecipePreviewList",
   components: {
-    RecipePreview
+    RecipePreview,
   },
   props: {
     title: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
   data() {
     return {
-      recipes: []
+      recipes: [],
     };
   },
   mounted() {
@@ -36,39 +36,22 @@ export default {
   methods: {
     async updateRecipes() {
       try {
-        const response = await this.axios.get(
-          "https://api.spoonacular.com/recipes/random",
-          {
-            params: {
-              limitLicense: true,
-              number: 3,
-              apiKey: 'b7b147413c244375812ccb826d79cdcc'
-            }
-          }
+        const response = await axios.get(
+          this.$root.store.server_domain + "/recipes/random",
+          { withCredentials: true }
         );
-
-        console.log("response: ", response);
-        const recipes = response.data.recipes.map((r) => {
-          return {
-            id: r.id,
-            title: r.title,
-            readyInMinutes: r.readyInMinutes,
-            image: r.image,
-            aggregateLikes: r.aggregateLikes
-          };
-        });
-        this.recipes = [];
-        this.recipes.push(...recipes);
-        console.log("recipes:  " , this.recipes);
+        const recipes = response.data.recipes;
+        this.recipes = Array.isArray(recipes) ? recipes : [];
       } catch (error) {
-        console.log(error);
+        console.error("Failed to fetch recipes:", error);
+        this.recipes = [];
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .container {
   min-height: 400px;
 }
