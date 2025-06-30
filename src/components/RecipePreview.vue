@@ -12,11 +12,12 @@
       <p class="card-text">{{ recipe.aggregateLikes }} likes</p>
       <p class="card-text">Popularity group: {{ recipe.popularityGroup || 'General' }}</p>
       <router-link
-        :to="{ name: 'recipe', params: { id: recipe.id } }"
+        :to="{ name: 'recipe', params: { recipeId: recipe.id } }"
         class="btn btn-primary"
       >
         View Recipe
       </router-link>
+
     </div>
   </div>
 </template>

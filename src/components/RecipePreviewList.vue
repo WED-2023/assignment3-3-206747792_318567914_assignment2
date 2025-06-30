@@ -40,14 +40,14 @@ export default {
           this.$root.store.server_domain + "/recipes/random",
           { withCredentials: true }
         );
-        const recipes = response.data.recipes;
+        const recipes = response.data; // כבר מחזיר את המערך
         this.recipes = Array.isArray(recipes) ? recipes : [];
       } catch (error) {
         console.error("Failed to fetch recipes:", error);
         this.recipes = [];
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
