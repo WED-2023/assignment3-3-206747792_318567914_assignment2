@@ -24,6 +24,10 @@ export default {
       type: String,
       required: true,
     },
+    type: {
+      type: String,
+      default: 'random',
+    },
   },
   data() {
     return {
@@ -36,11 +40,17 @@ export default {
   methods: {
     async updateRecipes() {
       try {
+        const endpoint =
+          this.type === "last-viewed"
+            ? "/user/lastViewed"
+            : "/recipes/random";
+
         const response = await axios.get(
-          this.$root.store.server_domain + "/recipes/random",
+          this.$root.store.server_domain + endpoint,
           { withCredentials: true }
         );
-        const recipes = response.data.recipes;
+
+        const recipes = response.data;
         this.recipes = Array.isArray(recipes) ? recipes : [];
       } catch (error) {
         console.error("Failed to fetch recipes:", error);
