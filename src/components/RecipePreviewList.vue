@@ -26,7 +26,7 @@ export default {
     },
     type: {
       type: String,
-      default: 'random',
+      default: 'random', // ברירת מחדל
     },
   },
   data() {
@@ -42,7 +42,7 @@ export default {
       try {
         const endpoint =
           this.type === "last-viewed"
-            ? "/user/lastViewed"
+            ? "/recipes/lastViewed"
             : "/recipes/random";
 
         const response = await axios.get(
