@@ -39,7 +39,8 @@ export default {
 
 <style scoped>
 .recipe-card {
-  width: 18rem;
+  width: auto;
+  min-width: 230;
   margin: 10px auto;
   cursor: pointer;
   transition: transform 0.2s ease;
