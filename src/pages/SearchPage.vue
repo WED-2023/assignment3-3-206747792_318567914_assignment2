@@ -4,7 +4,7 @@
 </template>
 
 <script>
-import SearchRecipes from "../views/SearchRecipes.vue";
+import SearchRecipes from "./SearchRecipes.vue";
 export default {
   components: { SearchRecipes }
 };
