@@ -2,7 +2,6 @@
   <div class="container mt-4" style="max-width: 500px;">
     <h2 class="mb-4">Register</h2>
     <b-form @submit.prevent="register">
-      <!-- Username -->
       <b-form-group label="Username" label-for="username">
         <b-form-input
           id="username"
@@ -90,6 +89,9 @@
           <div v-else-if="!v$.password.minLength || !v$.password.maxLength">
             Password must be 5–10 characters.
           </div>
+          <div v-else-if="!v$.password.passwordRequirements">
+            Password must contain at least one number and one special character.
+          </div>
         </b-form-invalid-feedback>
       </b-form-group>
 
@@ -103,13 +105,24 @@
         />
         <b-form-invalid-feedback v-if="v$.confirmedPassword.$error">
           <div v-if="!v$.confirmedPassword.required">Confirmation is required.</div>
-          <div v-else-if="!v$.confirmedPassword.sameAsPassword">
+          <div v-else-if="!v$.confirmedPassword.passwordMatch">
             Passwords do not match.
           </div>
         </b-form-invalid-feedback>
       </b-form-group>
 
-      <b-button type="submit" variant="success" class="w-100">Register</b-button>
+      <b-button 
+        type="submit" 
+        variant="success" 
+        class="w-100"
+        :disabled="state.isLoading || v$.$invalid"
+      >
+        <span v-if="state.isLoading">
+          <b-spinner small></b-spinner>
+          Registering...
+        </span>
+        <span v-else>Register</span>
+      </b-button>
 
       <b-alert
         variant="danger"
@@ -119,6 +132,12 @@
         show
       >
         Registration failed: {{ state.submitError }}
+        <div v-if="state.submitError && state.submitError.includes('country')" class="mt-2 small">
+          <strong>Tip:</strong> Try selecting a different country from the dropdown list.
+        </div>
+        <div v-else-if="state.submitError && state.submitError.includes('Server error')" class="mt-2 small">
+          <strong>Tip:</strong> This appears to be a temporary server issue. Please try again in a few minutes.
+        </div>
       </b-alert>
 
       <div class="mt-2">
@@ -132,19 +151,28 @@
 <script>
 import { reactive } from 'vue';
 import { useVuelidate } from '@vuelidate/core';
+import { useRouter } from 'vue-router';
 import {
   required,
   minLength,
   maxLength,
   alpha,
   email,
-  sameAs,
 } from '@vuelidate/validators';
 import rawCountries from '../assets/countries';
+import axios from 'axios';
+
+// Custom validator for password requirements
+const passwordRequirements = (value) => {
+  const hasNumber = /[0-9]/.test(value);
+  const hasSpecialChar = /[!@#$%^&*()_\-+=[\]{};':"\\|,.<>/?]/.test(value);
+  return hasNumber && hasSpecialChar;
+};
 
 export default {
   name: 'RegisterPage',
   setup() {
+    const router = useRouter();
     const state = reactive({
       username: '',
       firstName: '',
@@ -154,7 +182,13 @@ export default {
       password: '',
       confirmedPassword: '',
       submitError: null,
+      isLoading: false,
     });
+
+    // Create validation rules inside setup to access state
+    const passwordMatch = (value) => {
+      return value === state.password;
+    };
 
     const rules = {
       username: {
@@ -184,32 +218,139 @@ export default {
         required,
         minLength: minLength(5),
         maxLength: maxLength(10),
+        passwordRequirements,
       },
       confirmedPassword: {
         required,
-        sameAsPassword: sameAs(() => state.password),
+        passwordMatch: passwordMatch,
       },
     };
 
     const v$ = useVuelidate(rules, state);
 
     const register = async () => {
+      console.log('=== REGISTRATION PROCESS STARTED ===');
+      
+      // Prevent multiple submissions
+      if (state.isLoading) {
+        console.log('Already submitting, skipping');
+        return;
+      }
+      
+      console.log('Current form values:', {
+        username: state.username,
+        firstName: state.firstName,
+        lastName: state.lastName,
+        email: state.email,
+        country: state.country,
+        password: state.password,
+        confirmedPassword: state.confirmedPassword
+      });
+      console.log('Password match check:', state.password === state.confirmedPassword);
+      
       const valid = await v$.value.$validate();
-      if (!valid) return;
+      console.log('Validation result:', valid);
+      console.log('Validation errors:', v$.value.$errors);
+      
+      if (!valid) {
+        console.log('Validation failed, stopping');
+        console.log('Detailed errors:');
+        Object.keys(v$.value).forEach(key => {
+          if (key !== '$errors' && key !== '$invalid' && v$.value[key] && v$.value[key].$invalid) {
+            console.log(`${key} errors:`, v$.value[key].$errors);
+          }
+        });
+        return;
+      }
+
+      // Set loading state
+      state.isLoading = true;
+      state.submitError = null;
 
       try {
-        await window.axios.post('/register', {
+        console.log('Attempting registration with:', { 
+          username: state.username, 
+          email: state.email, 
+          country: state.country 
+        });
+        console.log('Full request payload:', {
           username: state.username,
-          firstName: state.firstName,
-          lastName: state.lastName,
+          firstname: state.firstName,
+          lastname: state.lastName,
           email: state.email,
           country: state.country,
           password: state.password,
+          confirmPassword: state.confirmedPassword,
         });
-        window.toast('Registration successful', 'You can now login', 'success');
-        window.router.push('/login');
+        console.log('Sending request to:', '/Register');
+        
+        await axios.post('/Register', {
+          username: state.username,
+          firstname: state.firstName,
+          lastname: state.lastName,
+          email: state.email,
+          country: state.country,
+          password: state.password,
+          confirmPassword: state.confirmedPassword,
+          profilePic: '', // Default empty profile pic
+        });
+        
+        console.log('Registration successful');
+        
+        // Clear form data
+        state.username = '';
+        state.firstName = '';
+        state.lastName = '';
+        state.email = '';
+        state.country = '';
+        state.password = '';
+        state.confirmedPassword = '';
+        state.submitError = null;
+        state.isLoading = false;
+        
+        alert('Registration successful! You can now login with your new account.');
+        router.push('/login');
       } catch (err) {
-        state.submitError = err.response?.data?.message || 'Unexpected error.';
+        console.error('Registration error:', err);
+        console.error('Error response:', err.response);
+        console.error('Error message:', err.message);
+        
+        // More detailed error handling
+        let errorMessage = 'Unexpected error occurred.';
+        
+        if (err.response) {
+          // Server responded with error status
+          const status = err.response.status;
+          const data = err.response.data;
+          
+          console.log('Server error status:', status);
+          console.log('Server error data:', data);
+          
+          if (status === 409) {
+            errorMessage = 'Username or email already exists. Please choose different credentials.';
+          } else if (status === 400) {
+            errorMessage = data?.message || 'Invalid registration data. Please check your inputs.';
+          } else if (status === 500) {
+            // Try to extract more specific error info from server
+            const serverMessage = data?.message;
+            if (serverMessage && serverMessage.includes('400')) {
+              errorMessage = 'Server validation error. Please try with a different country or check your input data.';
+            } else {
+              errorMessage = 'Server error occurred. This might be due to external service issues. Please try again later or contact support.';
+            }
+          } else {
+            errorMessage = data?.message || `Server error (${status}). Please try again.`;
+          }
+        } else if (err.request) {
+          // Network error
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else {
+          // Other error
+          errorMessage = err.message || 'Unexpected error occurred.';
+        }
+        
+        state.submitError = errorMessage;
+        state.isLoading = false;
       }
     };
 

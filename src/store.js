@@ -5,9 +5,10 @@ const store = reactive({
   server_domain: "http://localhost:3000",
 
   login(username) {
+    console.log('Store: login function called with username:', username);
     localStorage.setItem('username', username);
     this.username = username;
-    console.log("login", this.username);
+    console.log("Store: login completed, current username:", this.username);
   },
 
   logout() {

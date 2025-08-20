@@ -14,8 +14,10 @@ export default {
     LoginForm
   },
   methods: {
-    onLoginSuccess() {
-      this.$router.push('/main');
+    onLoginSuccess(user) {
+  console.log("Login successful:", user);
+  localStorage.setItem("user", JSON.stringify(user));
+  this.$router.push('/');
     }
   }
 };

@@ -24,9 +24,10 @@
 </template>
 
 <script>
-import { getCurrentInstance } from 'vue';
+import { ref } from 'vue';
 import RecipePreviewList from "../components/RecipePreviewList.vue";
 import LoginForm from "../components/LoginForm.vue";
+import store from '../store';
 
 export default {
   components: {
@@ -34,18 +35,19 @@ export default {
     LoginForm
   },
   setup() {
-    const internalInstance = getCurrentInstance();
-    const store = internalInstance.appContext.config.globalProperties.store;
+    const exploreList = ref(null);
+    const lastViewedList = ref(null);
 
     const refreshExplore = () => {
-      internalInstance.refs.exploreList.updateRecipes();
-        internalInstance.refs.lastViewedList?.updateRecipes(); 
-
+      exploreList.value?.updateRecipes();
+      lastViewedList.value?.updateRecipes(); 
     };
 
     return {
       store,
-      refreshExplore
+      refreshExplore,
+      exploreList,
+      lastViewedList
     };
   }
 };
