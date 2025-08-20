@@ -12,8 +12,7 @@
       <!-- Right column: Last Viewed or Login Form -->
       <div class="col-md-4">
         <div v-if="store.username">
-          <h3>Last Watched Recipes</h3>
-          <RecipePreviewList class="RandomRecipes" ref="lastViewedList" type="last-viewed" />
+          <RecipePreviewList class="RandomRecipes" ref="lastViewedList" type="last-viewed" title="Last Watched Recipes" />
         </div>
         <div v-else class="text-center mt-4">
           <LoginForm @success="onLoginSuccess" />

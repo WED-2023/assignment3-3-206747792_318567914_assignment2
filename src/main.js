@@ -31,7 +31,9 @@ axios.defaults.withCredentials = true;
 // Axios interceptors
 axios.interceptors.request.use(
   (config) => {
-    console.log('Making request to:', config.baseURL + config.url);
+    // Avoid double baseURL in log
+    const url = config.url.startsWith('http') ? config.url : (config.baseURL ? config.baseURL.replace(/\/$/, '') : '') + config.url;
+    console.log('Making request to:', url);
     console.log('Request method:', config.method);
     console.log('Request data:', config.data);
     return config;
