@@ -16,7 +16,7 @@
           <RecipePreviewList class="RandomRecipes" ref="lastViewedList" type="last-viewed" />
         </div>
         <div v-else class="text-center mt-4">
-          <LoginForm @success="refreshExplore" />
+          <LoginForm @success="onLoginSuccess" />
         </div>
       </div>
     </div>
@@ -37,17 +37,25 @@ export default {
   setup() {
     const exploreList = ref(null);
     const lastViewedList = ref(null);
+    const storeObj = store;
 
     const refreshExplore = () => {
       exploreList.value?.updateRecipes();
       lastViewedList.value?.updateRecipes(); 
     };
 
+    const onLoginSuccess = (user) => {
+      // עדכון ה-store כך שה-UI יזהה התחברות
+      storeObj.login(user.username);
+      refreshExplore();
+    };
+
     return {
-      store,
+      store: storeObj,
       refreshExplore,
       exploreList,
-      lastViewedList
+      lastViewedList,
+      onLoginSuccess
     };
   }
 };
