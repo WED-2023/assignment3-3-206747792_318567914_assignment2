@@ -1,6 +1,12 @@
+
 <template>
-    <div class="container">
-      <h1 class="title">Search Page</h1>
-    </div>
-  </template>
+  <SearchRecipes />
+</template>
+
+<script>
+import SearchRecipes from "../views/SearchRecipes.vue";
+export default {
+  components: { SearchRecipes }
+};
+</script>
   

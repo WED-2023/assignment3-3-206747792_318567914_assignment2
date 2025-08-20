@@ -39,26 +39,41 @@ export default {
 
 <style scoped>
 .recipe-card {
-  width: auto;
-  min-width: 230;
-  margin: 10px auto;
+  width: 100%;
+  max-width: 320px;
+  min-width: 240px;
+  min-height: 370px;
+  max-height: 420px;
+  margin: 0 auto;
   cursor: pointer;
   transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  border-radius: 12px;
+  background: #fff;
 }
 .recipe-card:hover {
-  transform: scale(1.02);
+  transform: scale(1.03);
+  box-shadow: 0 4px 16px rgba(74,144,226,0.13);
 }
 
 .image-container {
   position: relative;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
 }
 
 .clickable-image {
-  height: 200px;
-  object-fit: cover;
   width: 100%;
+  height: 100%;
+  object-fit: cover;
   transition: opacity 0.3s ease;
   cursor: pointer;
+  display: block;
 }
 
 .image-container:hover .clickable-image {
@@ -82,6 +97,25 @@ export default {
   opacity: 1;
 }
 
+.card-body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.card-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+.card-text {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 0.3rem;
+}
 .icons {
   font-size: 1.2rem;
   margin-top: 5px;
