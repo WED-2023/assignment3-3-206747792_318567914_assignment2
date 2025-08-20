@@ -15,9 +15,15 @@ export default {
   },
   methods: {
     onLoginSuccess(user) {
-  console.log("Login successful:", user);
-  localStorage.setItem("user", JSON.stringify(user));
-  this.$router.push('/');
+      console.log("Login successful:", user);
+      // עדכון ה-store כך שה-UI יזהה התחברות
+      this.$root.$store?.login?.(user.username); // ליתר בטחון, אך נעדיף ייבוא ישיר
+      try {
+        // אם store לא על root, נייבא ישירות
+        const store = require('../store').default;
+        store.login(user.username);
+      } catch (e) { console.error(e); }
+      this.$router.push('/');
     }
   }
 };
