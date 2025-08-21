@@ -230,13 +230,11 @@ export default {
 
     const register = async () => {
       console.log('=== REGISTRATION PROCESS STARTED ===');
-      
       // Prevent multiple submissions
       if (state.isLoading) {
         console.log('Already submitting, skipping');
         return;
       }
-      
       console.log('Current form values:', {
         username: state.username,
         firstName: state.firstName,
@@ -247,26 +245,36 @@ export default {
         confirmedPassword: state.confirmedPassword
       });
       console.log('Password match check:', state.password === state.confirmedPassword);
-      
       const valid = await v$.value.$validate();
       console.log('Validation result:', valid);
       console.log('Validation errors:', v$.value.$errors);
-      
       if (!valid) {
         console.log('Validation failed, stopping');
         console.log('Detailed errors:');
-        Object.keys(v$.value).forEach(key => {
-          if (key !== '$errors' && key !== '$invalid' && v$.value[key] && v$.value[key].$invalid) {
-            console.log(`${key} errors:`, v$.value[key].$errors);
+        let msg = '';
+        if (v$.value.password && v$.value.password.$invalid) {
+          if (!v$.value.password.required) {
+            msg = 'Password is required.';
+          } else if (!v$.value.password.minLength || !v$.value.password.maxLength) {
+            msg = 'Password must be 5–10 characters.';
+          } else if (!v$.value.password.passwordRequirements) {
+            msg = 'Password must contain at least one number and one special character.';
           }
-        });
+        } else if (v$.value.confirmedPassword && v$.value.confirmedPassword.$invalid) {
+          if (!v$.value.confirmedPassword.required) {
+            msg = 'Password confirmation is required.';
+          } else if (!v$.value.confirmedPassword.passwordMatch) {
+            msg = 'Passwords do not match.';
+          }
+        } else {
+          msg = 'Please correct the highlighted errors in the form.';
+        }
+        window.alert(msg);
         return;
       }
-
       // Set loading state
       state.isLoading = true;
       state.submitError = null;
-
       try {
         console.log('Attempting registration with:', { 
           username: state.username, 
@@ -283,7 +291,6 @@ export default {
           confirmPassword: state.confirmedPassword,
         });
         console.log('Sending request to:', '/Register');
-        
         await axios.post('/Register', {
           username: state.username,
           firstname: state.firstName,
@@ -294,9 +301,7 @@ export default {
           confirmPassword: state.confirmedPassword,
           profilePic: '', // Default empty profile pic
         });
-        
         console.log('Registration successful');
-        
         // Clear form data
         state.username = '';
         state.firstName = '';
@@ -307,29 +312,39 @@ export default {
         state.confirmedPassword = '';
         state.submitError = null;
         state.isLoading = false;
-        
         alert('Registration successful! You can now login with your new account.');
         router.push('/login');
       } catch (err) {
         console.error('Registration error:', err);
         console.error('Error response:', err.response);
         console.error('Error message:', err.message);
-        
         // More detailed error handling
         let errorMessage = 'Unexpected error occurred.';
-        
         if (err.response) {
           // Server responded with error status
           const status = err.response.status;
           const data = err.response.data;
-          
           console.log('Server error status:', status);
           console.log('Server error data:', data);
-          
           if (status === 409) {
             errorMessage = 'Username or email already exists. Please choose different credentials.';
           } else if (status === 400) {
-            errorMessage = data?.message || 'Invalid registration data. Please check your inputs.';
+            // Try to extract more specific error info from server
+            if (typeof data?.message === 'string') {
+              if (data.message.toLowerCase().includes('email')) {
+                errorMessage = 'Email is already in use.';
+              } else if (data.message.toLowerCase().includes('username')) {
+                errorMessage = 'Username is already in use.';
+              } else if (data.message.toLowerCase().includes('password')) {
+                errorMessage = 'Password does not meet requirements.';
+              } else if (data.message.toLowerCase().includes('match')) {
+                errorMessage = 'Passwords do not match.';
+              } else {
+                errorMessage = data.message;
+              }
+            } else {
+              errorMessage = 'Invalid registration data. Please check your inputs.';
+            }
           } else if (status === 500) {
             // Try to extract more specific error info from server
             const serverMessage = data?.message;
@@ -348,9 +363,10 @@ export default {
           // Other error
           errorMessage = err.message || 'Unexpected error occurred.';
         }
-        
         state.submitError = errorMessage;
         state.isLoading = false;
+        // Show popup for registration error
+        window.alert(errorMessage);
       }
     };
 

@@ -3,19 +3,13 @@
     <div class="main-card shadow-lg">
       <div class="header-area">
         <h1 class="main-title">
-          Join us in the <span class="highlight">search</span> for the perfect recipe
+          Explore endless flavors – start your search
         </h1>
         <p class="subtitle">Find, filter and discover delicious recipes for every taste and need</p>
       </div>
       <form class="search-form-modern" @submit.prevent="fetchRecipes">
-        <div class="search-row">
-          <input v-model="q" type="text" class="search-input-modern" placeholder="Search recipes..." required />
-          <button type="submit" class="search-btn-modern" :disabled="loading">
-            <span v-if="!loading" class="icon-search"></span>
-          </button>
-        </div>
-        <div class="filters-row">
-          <div class="filter-group-modern">
+        <div class="filters-row filters-row-inline">
+          <div class="filter-group-inline">
             <label>Results</label>
             <select v-model.number="number">
               <option :value="5">5</option>
@@ -23,15 +17,7 @@
               <option :value="15">15</option>
             </select>
           </div>
-          <div class="filter-group-modern">
-            <label>Sort by</label>
-            <select v-model="sort">
-              <option value="">None</option>
-              <option value="readyInMinutes">Preparation Time</option>
-              <option value="popularity">Popularity</option>
-            </select>
-          </div>
-          <div class="filter-group-modern cuisine-dropdown-group">
+          <div class="filter-group-inline cuisine-dropdown-group">
             <label>Cuisine</label>
             <div class="dropdown-multiselect" @click.stop="showCuisineDropdown = !showCuisineDropdown">
               <div class="dropdown-selected">
@@ -47,7 +33,7 @@
               </div>
             </div>
           </div>
-          <div class="filter-group-modern diet-dropdown-group">
+          <div class="filter-group-inline diet-dropdown-group">
             <label>Diet</label>
             <div class="dropdown-multiselect" @click.stop="showDietDropdown = !showDietDropdown">
               <div class="dropdown-selected">
@@ -63,7 +49,7 @@
               </div>
             </div>
           </div>
-          <div class="filter-group-modern intolerance-dropdown-group">
+          <div class="filter-group-inline intolerance-dropdown-group">
             <label>Intolerances</label>
             <div class="dropdown-multiselect" @click.stop="showIntoleranceDropdown = !showIntoleranceDropdown">
               <div class="dropdown-selected">
@@ -80,36 +66,52 @@
             </div>
           </div>
         </div>
+        <div class="search-row">
+          <input v-model="q" type="text" class="search-input-modern" placeholder="Search recipes..." required />
+          <button type="submit" class="search-btn-modern" :disabled="loading">
+            <span v-if="!loading" class="icon-search"></span>
+          </button>
+        </div>
       </form>
       <div v-if="loading" class="loading-area">
         <div class="spinner"></div>
         <span>Searching…</span>
       </div>
       <div v-if="error" class="error-modern">{{ error }}</div>
-      <div v-if="results.length" class="results-grid-modern">
-        <div v-for="recipe in results" :key="recipe.id" class="recipe-card-modern">
-          <img v-if="recipe.image" :src="recipe.image" class="recipe-img-modern" alt="Recipe image" />
-          <div class="recipe-info-modern">
-            <h3 class="recipe-title-modern">{{ recipe.title }}</h3>
-            <div class="badges-row">
-              <span class="badge-green">{{ recipe.readyInMinutes }} min</span>
-              <span class="badge-light">{{ recipe.servings || 1 }} servings</span>
-              <span class="badge-like">❤ {{ recipe.aggregateLikes }}</span>
+      <div v-if="results.length">
+        <div class="sort-row-modern">
+          <label>Sort by</label>
+          <select v-model="sort" @change="fetchRecipes">
+            <option value="">None</option>
+            <option value="readyInMinutes">Preparation Time</option>
+            <option value="popularity">Popularity</option>
+          </select>
+        </div>
+        <div class="results-grid-modern">
+          <div v-for="recipe in results" :key="recipe.id" class="recipe-card-modern">
+            <img v-if="recipe.image" :src="recipe.image" class="recipe-img-modern" alt="Recipe image" />
+            <div class="recipe-info-modern">
+              <h3 class="recipe-title-modern">{{ recipe.title }}</h3>
+              <div class="badges-row">
+                <span class="badge-green">{{ recipe.readyInMinutes }} min</span>
+                <span class="badge-light">{{ recipe.servings || 1 }} servings</span>
+                <span class="badge-like">❤ {{ recipe.aggregateLikes }}</span>
+              </div>
+              <div class="badges-row small">
+                <span v-for="c in (recipe.cuisines || [])" :key="c" class="badge-outline">{{ c }}</span>
+                <span v-for="d in (recipe.diets || [])" :key="d" class="badge-outline">{{ d }}</span>
+              </div>
+              <details class="instructions-collapse">
+                <summary>Show instructions</summary>
+                <ol>
+                  <li v-for="s in recipe._instructions || []" :key="s.number">{{ s.step }}</li>
+                </ol>
+              </details>
             </div>
-            <div class="badges-row small">
-              <span v-for="c in (recipe.cuisines || [])" :key="c" class="badge-outline">{{ c }}</span>
-              <span v-for="d in (recipe.diets || [])" :key="d" class="badge-outline">{{ d }}</span>
-            </div>
-            <details class="instructions-collapse">
-              <summary>Show instructions</summary>
-              <ol>
-                <li v-for="s in recipe._instructions || []" :key="s.number">{{ s.step }}</li>
-              </ol>
-            </details>
           </div>
         </div>
       </div>
-      <div v-else-if="!loading && !error" class="empty-state-modern">
+      <div v-else-if="!loading && !error && searchPerformed" class="empty-state-modern">
         <span class="icon-empty"></span>
         <div>No results. Try another search.</div>
       </div>
@@ -152,7 +154,8 @@ export default {
       sort: "",
       showIntoleranceDropdown: false,
       showCuisineDropdown: false,
-      showDietDropdown: false
+      showDietDropdown: false,
+      searchPerformed: false
     };
   },
   methods: {
@@ -168,6 +171,7 @@ export default {
         return;
       }
       this.loading = true;
+      this.searchPerformed = true;
       const params = {
         query: this.q,
         number: this.number,
@@ -216,6 +220,7 @@ export default {
         this.diet = Array.isArray(saved.diet) ? saved.diet : (saved.diet ? [saved.diet] : []);
         this.intolerances = saved.intolerances || [];
         this.sort = saved.sort || "";
+        this.searchPerformed = false;
         this.fetchRecipes();
       } catch (e) {
         // ignore parse errors intentionally
@@ -373,39 +378,52 @@ export default {
   content: "\1F50D";
   font-size: 1.3em;
 }
-.filters-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.2em;
-  justify-content: center;
-  margin-bottom: 0.5em;
-}
-.filter-group-modern {
-  background: #f2f8f2;
-  border-radius: 1.5em;
-  padding: 0.7em 1.2em 0.5em 1.2em;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-width: 120px;
-  box-shadow: 0 1px 4px 0 rgba(60, 80, 60, 0.04);
-}
-.filter-group-modern label {
-  font-size: 0.98em;
-  color: #3a6c2f;
-  font-weight: 600;
-  margin-bottom: 0.2em;
-}
-.filter-group-modern select {
-  border: none;
-  background: #e6f7d9;
-  border-radius: 1em;
-  padding: 0.3em 0.7em;
-  font-size: 1em;
-  color: #2a3d2a;
-  outline: none;
-  margin-bottom: 0.1em;
-}
+  .filters-row-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2em;
+    justify-content: center;
+    margin-bottom: 0.5em;
+    margin-top: 0.5em;
+  }
+  .filter-group-inline {
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0 0.5em 0 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-width: 0;
+    box-shadow: none;
+    margin-bottom: 0;
+    gap: 0.3em;
+  }
+  .filter-group-inline label {
+    font-size: 0.98em;
+    color: #3a6c2f;
+    font-weight: 600;
+    margin-bottom: 0;
+    margin-right: 0.3em;
+  }
+  .filter-group-inline select {
+    border: none;
+    background: #e6f7d9;
+    border-radius: 1em;
+    padding: 0.3em 0.7em;
+    font-size: 1em;
+    color: #2a3d2a;
+    outline: none;
+    margin-bottom: 0;
+  }
+  .sort-row-modern {
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+    margin-bottom: 1.2em;
+    margin-top: 0.5em;
+    justify-content: flex-end;
+  }
 .loading-area {
   display: flex;
   align-items: center;

@@ -56,10 +56,20 @@ export default {
         if (ok) {
           this.$emit("success", res.data);
         } else {
-          this.error = res.data?.error || "Login failed";
+          let msg = res.data?.error || "Login failed";
+          if (res.status === 401 || msg.toLowerCase().includes("401")) {
+            msg = "Incorrect username or password.";
+          }
+          this.error = msg;
+          window.alert(this.error);
         }
       } catch (e) {
-        this.error = e?.response?.data?.error || e.message || "Login failed";
+        let msg = e?.response?.data?.error || e.message || "Login failed";
+        if (e?.response?.status === 401 || msg.toLowerCase().includes("401")) {
+          msg = "Incorrect username or password.";
+        }
+        this.error = msg;
+        window.alert(this.error);
       } finally {
         this.loading = false;
       }

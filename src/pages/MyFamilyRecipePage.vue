@@ -7,34 +7,33 @@
 						</h1>
 						<p class="family-subtitle">A collection of recipes passed down through our family generations</p>
 					</div>
-					<div class="family-recipes-grid">
-						<div v-for="recipe in familyRecipes" :key="recipe.title" class="family-recipe-card">
-							<div class="family-img-wrap">
-								<img v-if="recipe.image" :src="recipe.image" class="family-recipe-img" :alt="'Image of ' + recipe.title" />
-							</div>
-							<div class="family-recipe-info">
-								<h3 class="family-recipe-title">{{ recipe.title }}</h3>
-								<div class="family-badges-row">
-									<span class="family-badge-pill family-badge-green">{{ recipe.familyMember }}</span>
-									<span class="family-badge-pill family-badge-light">{{ recipe.occasion }}</span>
+								<div class="family-recipes-blog">
+									<div v-for="recipe in familyRecipes" :key="recipe.title" class="family-recipe-blog">
+										<h2 class="family-recipe-title">{{ recipe.title }}</h2>
+										<div class="family-badges-row">
+											<span class="family-badge-pill family-badge-green">{{ recipe.familyMember }}</span>
+											<span class="family-badge-pill family-badge-light">{{ recipe.occasion }}</span>
+										</div>
+										<div class="family-blog-imgs">
+											<img v-if="recipe.image" :src="recipe.image" class="family-recipe-img-main" :alt="'Image of ' + recipe.title" />
+											<img v-if="recipe.prepImage" :src="recipe.prepImage" class="family-recipe-img-prep" :alt="'Preparation steps for ' + recipe.title" />
+										</div>
+										<div class="family-details-row">
+											<section class="family-instructions-collapse always-open">
+												<h3>רכיבים</h3>
+												<ul>
+													<li v-for="(ing, idx) in recipe.ingredients" :key="idx">{{ ing }}</li>
+												</ul>
+											</section>
+											<section class="family-instructions-collapse always-open">
+												<h3>אופן הכנה</h3>
+												<ol>
+													<li v-for="(step, idx) in recipe.instructions" :key="idx">{{ step }}</li>
+												</ol>
+											</section>
+										</div>
+									</div>
 								</div>
-								<div class="family-details-row">
-									<details class="family-instructions-collapse">
-										<summary>Ingredients</summary>
-										<ul>
-											<li v-for="(ing, idx) in recipe.ingredients" :key="idx">{{ ing }}</li>
-										</ul>
-									</details>
-									<details class="family-instructions-collapse">
-										<summary>Preparation</summary>
-										<ol>
-											<li v-for="(step, idx) in recipe.instructions" :key="idx">{{ step }}</li>
-										</ol>
-									</details>
-								</div>
-							</div>
-						</div>
-					</div>
 				</div>
 			</div>
 </template>
@@ -44,67 +43,81 @@ export default {
 	name: "MyFamilyRecipePage",
 		data() {
 			return {
-				familyRecipes: [
-					{
-						title: "Grandma Rachel's Kubbeh",
-						familyMember: "Grandma Rachel",
-						occasion: "Holidays and family gatherings",
-						image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80",
-						ingredients: [
-							"500g fine bulgur",
-							"500g ground beef",
-							"1 large onion, chopped",
-							"Salt, pepper, cumin, paprika",
-							"Oil for frying"
-						],
-						instructions: [
-							"Soak the bulgur in hot water for 20 minutes and squeeze well.",
-							"Mix the bulgur with beef, onion, and spices.",
-							"Form balls and fill with seasoned meat.",
-							"Deep fry until golden brown."
-						]
-					},
-					{
-						title: "Aunt Esther's Apple Cake",
-						familyMember: "Aunt Esther",
-						occasion: "Rosh Hashanah and every Shabbat",
-						image: "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80",
-						ingredients: [
-							"3 apples, peeled and diced",
-							"2 eggs",
-							"1 cup sugar",
-							"1/2 cup oil",
-							"1.5 cups flour",
-							"1 packet baking powder",
-							"Cinnamon"
-						],
-						instructions: [
-							"Beat eggs with sugar.",
-							"Add oil, flour, baking powder, and cinnamon.",
-							"Fold in the apples.",
-							"Bake at 180°C for about 40 minutes."
-						]
-					},
-					{
-						title: "Grandpa Jacob's Chicken Soup",
-						familyMember: "Grandpa Jacob",
-						occasion: "Shabbat and winter",
-						image: "https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=400&q=80",
-						ingredients: [
-							"1 whole chicken",
-							"2 carrots",
-							"2 potatoes",
-							"1 onion",
-							"Celery, parsley",
-							"Salt, pepper"
-						],
-						instructions: [
-							"Place all ingredients in a large pot with water.",
-							"Bring to a boil and simmer for about 1.5 hours.",
-							"Season to taste and serve hot."
-						]
-					}
-				]
+													familyRecipes: [
+														{
+															title: "קציצות של סבתא רחל",
+															familyMember: "סבתא רחל",
+															occasion: "בכל יום שישי בצהריים, כחלק מהכנות לשבת",
+															image: require("@/assets/meatballs.png"),
+															prepImage: require("@/assets/meatballs2.png"),
+															ingredients: [
+																"500 גרם בשר טחון (בקר או הודו)",
+																"בצל בינוני קצוץ דק",
+																"2 פרוסות חלה מושרות במים",
+																"1 ביצה",
+																"חופן כוסברה קצוצה",
+																"כף רסק עגבניות",
+																"מלח, פלפל, כמון לפי הטעם",
+																"שמן זית לטיגון"
+															],
+															instructions: [
+																"מערבבים היטב את כל החומרים בקערה עד שנוצר תערובת אחידה.",
+																"יוצרים קציצות בגודל בינוני.",
+																"מטגנים קלות מכל צד עד שהקציצות מזהיבות.",
+																"מוסיפים לסיר רוטב עגבניות פשוט (רסק, מים ותיבול) ומבשלים יחד כ־30 דקות.",
+																"מגישים עם אורז לבן או פירה."
+															]
+														},
+														{
+															title: "פסטה של אמא יעל",
+															familyMember: "אמא יעל",
+															occasion: "בארוחות ערב משפחתיות באמצע השבוע, בעיקר כשצריך מנה מהירה",
+															image: require("@/assets/pasta.png"),
+															prepImage: require("@/assets/pasta2.png"),
+															ingredients: [
+																"חבילת פסטה קצרה (פנה או פרפרים)",
+																"2 כפות שמן זית",
+																"3 שיני שום פרוסות",
+																"עגבניות שרי חצויות (כוס וחצי)",
+																"בזיליקום טרי",
+																"חצי כוס פרמזן מגורר",
+																"מלח ופלפל"
+															],
+															instructions: [
+																"מבשלים את הפסטה לפי הוראות האריזה עד ל־al dente.",
+																"במחבת גדולה מחממים שמן זית ומטגנים קלות את השום.",
+																"מוסיפים עגבניות שרי ומבשלים עד שהן מתרככות ומשחררות נוזלים.",
+																"מוסיפים את הפסטה למחבת, מתבלים במלח ופלפל ומערבבים היטב.",
+																"מפזרים מעל בזיליקום ופרמזן ומגישים חם."
+															]
+														},
+														{
+															title: "עוגת הדבש של דודה מרים",
+															familyMember: "דודה מרים",
+															occasion: "בראש השנה ובימי הולדת במשפחה",
+															image: require("@/assets/cake.png"),
+															prepImage: require("@/assets/cake2.png"),
+															ingredients: [
+																"3 ביצים",
+																"כוס סוכר חום",
+																"כוס דבש",
+																"חצי כוס שמן",
+																"2.5 כוסות קמח",
+																"שקית אבקת אפייה",
+																"כפית קינמון",
+																"חצי כפית ג’ינג’ר טחון",
+																"כוס תה שחור חזק (מצונן)"
+															],
+															instructions: [
+																"מקציפים ביצים עם סוכר עד לקבלת תערובת תפוחה.",
+																"מוסיפים בהדרגה דבש ושמן תוך ערבוב.",
+																"מנפים פנימה את הקמח, אבקת האפייה והתבלינים.",
+																"מוסיפים את התה בהדרגה עד שהתערובת חלקה.",
+																"יוצקים לתבנית משומנת ואופים ב־170 מעלות כ־40–45 דקות.",
+																"מגישים עם כוס תה חם בערב חגיגי."
+															]
+														}
+													]
 			};
 		}
 };
@@ -156,51 +169,53 @@ export default {
 	font-size: 1.18rem;
 	margin-bottom: 0.2rem;
 }
-.family-recipes-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-	gap: 2.2em;
-	margin-top: 1.5em;
-	width: 100%;
-}
-.family-recipe-card {
-	background: #f8fff8;
-	border-radius: 2em;
-	box-shadow: 0 2px 12px 0 rgba(60, 80, 60, 0.07);
-	padding: 1.5em 1.5em 1.2em 1.5em;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	min-height: 370px;
-	transition: box-shadow 0.2s;
-}
-.family-recipe-card:hover {
-	box-shadow: 0 6px 24px 0 rgba(60, 80, 60, 0.13);
-}
-.family-img-wrap {
-	width: 100%;
-	display: flex;
-	justify-content: center;
-	margin-bottom: 0.8em;
-}
-.family-recipe-img {
-	width: 100%;
-	max-width: 220px;
-	max-height: 140px;
-	object-fit: cover;
-	border-radius: 1.2em;
-	box-shadow: 0 1px 6px 0 rgba(60, 80, 60, 0.08);
-}
-.family-recipe-info {
-	width: 100%;
-	text-align: center;
-}
-.family-recipe-title {
-	font-size: 1.22em;
-	font-weight: 700;
-	color: #2a3d2a;
-	margin-bottom: 0.5em;
-}
+	.family-recipes-blog {
+		display: flex;
+		flex-direction: column;
+		gap: 3.5em;
+		margin-top: 1.5em;
+		width: 100%;
+		align-items: center;
+	}
+	.family-recipe-blog {
+		background: #f8fff8;
+		border-radius: 2em;
+		box-shadow: 0 2px 12px 0 rgba(60, 80, 60, 0.07);
+		padding: 2.2em 2.2em 1.7em 2.2em;
+		width: 100%;
+		max-width: 600px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		transition: box-shadow 0.2s;
+	}
+	.family-recipe-blog:hover {
+		box-shadow: 0 6px 24px 0 rgba(60, 80, 60, 0.13);
+	}
+	.family-blog-imgs {
+		display: flex;
+		flex-direction: column;
+		gap: 0.7em;
+		align-items: center;
+		margin-bottom: 1em;
+		width: 100%;
+	}
+	.family-recipe-img-main {
+		width: 100%;
+		max-width: 350px;
+		max-height: 200px;
+		object-fit: cover;
+		border-radius: 1.2em;
+		box-shadow: 0 1px 6px 0 rgba(60, 80, 60, 0.08);
+	}
+	.family-recipe-img-prep {
+		width: 100%;
+		max-width: 350px;
+		max-height: 120px;
+		object-fit: cover;
+		border-radius: 1.2em;
+		box-shadow: 0 1px 6px 0 rgba(60, 80, 60, 0.08);
+	}
 .family-badges-row {
 	display: flex;
 	gap: 0.7em;
