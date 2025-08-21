@@ -29,7 +29,7 @@ export default {
 		const fetchMyRecipes = async () => {
 			try {
 				const { data } = await axios.get(
-					store.server_domain + '/recipes/my',
+				store.server_domain + '/user/my-recipes',
 					{ withCredentials: true }
 				);
 				recipes.value = Array.isArray(data) ? data : [];

@@ -3,7 +3,7 @@
     <h3>{{ title }}</h3>
 
     <div class="row">
-      <div class="col" v-for="r in recipes" :key="r.id">
+      <div class="col" v-for="r in internalRecipes" :key="r.id">
         <RecipePreview class="recipePreview" :recipe="r" />
       </div>
     </div>
@@ -28,14 +28,31 @@ export default {
       type: String,
       default: 'random', // ברירת מחדל
     },
+    recipes: {
+      type: Array,
+      default: null,
+    },
   },
   data() {
     return {
-      recipes: [],
+      internalRecipes: [],
     };
   },
   mounted() {
-    this.updateRecipes();
+    // Do nothing here. The watcher on recipes will handle fetching if needed.
+  },
+  watch: {
+    recipes: {
+      handler(newVal) {
+        if (Array.isArray(newVal)) {
+          this.internalRecipes = newVal;
+        } else {
+          // If recipes is not provided, fetch from server
+          this.updateRecipes();
+        }
+      },
+      immediate: true,
+    },
   },
   methods: {
     async updateRecipes() {
@@ -44,17 +61,15 @@ export default {
           this.type === "last-viewed"
             ? "/recipes/lastViewed"
             : "/recipes/random";
-
         const response = await axios.get(
           this.$root.store.server_domain + endpoint,
           { withCredentials: true }
         );
-
         const recipes = response.data;
-        this.recipes = Array.isArray(recipes) ? recipes : [];
+        this.internalRecipes = Array.isArray(recipes) ? recipes : [];
       } catch (error) {
         console.error("Failed to fetch recipes:", error);
-        this.recipes = [];
+        this.internalRecipes = [];
       }
     },
   },
