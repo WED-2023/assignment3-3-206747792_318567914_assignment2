@@ -28,7 +28,7 @@ export default {
     const fetchFavorites = async () => {
       try {
         const { data } = await axios.get(
-          store.server_domain + '/users/favorites',
+          store.server_domain + '/user/favorites',
           { withCredentials: true }
         );
         recipes.value = Array.isArray(data) ? data : [];

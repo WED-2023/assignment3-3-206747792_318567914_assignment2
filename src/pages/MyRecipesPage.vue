@@ -1,7 +1,6 @@
 
 <template>
 	<div class="container mt-4">
-		<h2 class="mb-4">My Recipes</h2>
 		<RecipePreviewList
 			ref="myRecipesList"
 			title="My Recipes"

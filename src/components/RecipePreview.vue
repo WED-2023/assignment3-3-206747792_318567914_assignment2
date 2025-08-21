@@ -1,16 +1,30 @@
 <template>
-  <router-link
-    :to="{ name: 'recipe', params: { recipeId: recipe.id } }"
-    class="card recipe-card text-decoration-none text-dark"
-  >
+  <div class="card recipe-card text-decoration-none text-dark position-relative">
     <div class="image-container">
-      <img
-        v-if="recipe.image"
-        :src="recipe.image"
-        class="card-img-top clickable-image"
-        alt="Recipe image"
-      />
-      <div class="overlay-text">Click to view</div>
+      <router-link
+        :to="{ name: 'recipe', params: { recipeId: recipe.id } }"
+        style="display:block;"
+      >
+        <img
+          v-if="recipe.image"
+          :src="recipe.image"
+          class="card-img-top clickable-image"
+          alt="Recipe image"
+        />
+        <div class="overlay-text">Click to view</div>
+      </router-link>
+    </div>
+    <div class="d-flex justify-content-end align-items-center px-3 pt-2 pb-0">
+      <button
+        class="favorite-btn btn btn-link p-0"
+        :class="{ 'text-danger': isFavorite }"
+        :disabled="isFavorite || loading"
+        @click.stop="addToFavorites"
+        :title="isFavorite ? 'Added to favorites' : 'Add to favorites'"
+      >
+        <span v-if="isFavorite">♥</span>
+        <span v-else>♡</span>
+      </button>
     </div>
     <div class="card-body">
       <h5 class="card-title">{{ recipe.title }}</h5>
@@ -22,10 +36,14 @@
         <span v-if="recipe.glutenFree" title="Gluten Free">🚫</span>
       </div>
     </div>
-  </router-link>
+  </div>
 </template>
 
 <script>
+import axios from 'axios';
+import store from '../store';
+import { ref } from 'vue';
+
 export default {
   name: "RecipePreview",
   props: {
@@ -33,11 +51,37 @@ export default {
       type: Object,
       required: true
     }
+  },
+  setup(props) {
+    const isFavorite = ref(false);
+    const loading = ref(false);
+
+    // Optionally: check if already favorite on mount (not required for minimal flow)
+
+    async function addToFavorites() {
+      if (isFavorite.value || loading.value) return;
+      loading.value = true;
+      try {
+        await axios.post(
+          store.server_domain + '/user/favorites',
+          { recipeId: props.recipe.id },
+          { withCredentials: true }
+        );
+        isFavorite.value = true;
+      } catch (e) {
+        alert('Failed to add to favorites');
+      } finally {
+        loading.value = false;
+      }
+    }
+
+    return { isFavorite, loading, addToFavorites };
   }
 };
 </script>
 
 <style scoped>
+
 .recipe-card {
   width: 100%;
   max-width: 320px;
@@ -52,10 +96,23 @@ export default {
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
   border-radius: 12px;
   background: #fff;
+  position: relative;
 }
 .recipe-card:hover {
   transform: scale(1.03);
   box-shadow: 0 4px 16px rgba(74,144,226,0.13);
+}
+.favorite-btn {
+  font-size: 1.7rem;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.favorite-btn:disabled {
+  opacity: 0.7;
+  cursor: default;
 }
 
 .image-container {
