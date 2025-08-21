@@ -1,6 +1,7 @@
 import Main from "./pages/MainPage";
 import NotFound from "./pages/NotFoundPage";
 
+
 const routes = [
   {
     path: "/",
@@ -26,6 +27,16 @@ const routes = [
     path: "/recipe/:recipeId",
     name: "recipe",
     component: () => import("./pages/RecipeViewPage"),
+  },
+  {
+    path: "/favorites",
+    name: "favorites",
+    component: () => import("./pages/FavoritesPage.vue"),
+  },
+  {
+    path: "/my-recipes",
+    name: "myRecipes",
+    component: () => import("./pages/MyRecipesPage"),
   },
   {
     path: "*",

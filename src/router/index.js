@@ -39,6 +39,16 @@ const routes = [
     component: () => import("../pages/MyFamilyRecipePage.vue"),
   },
   {
+    path: "/favorites",
+    name: "favorites",
+    component: () => import("../pages/FavoritesPage.vue"),
+  },
+  {
+    path: "/my-recipes",
+    name: "myRecipes",
+    component: () => import("../pages/MyRecipesPage.vue"),
+  },
+  {
     path: "/recipe/:recipeId",
     name: "recipe",
     component: () => import("../pages/RecipeViewPage.vue"),

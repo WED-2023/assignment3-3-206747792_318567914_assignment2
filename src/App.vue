@@ -21,6 +21,8 @@
             <button class="nav-link nav-dropdown-btn">Personal Area ▼</button>
             <div v-if="showDropdown" class="nav-dropdown-content">
               <router-link class="nav-dropdown-link" :to="{ name: 'familyRecipes' }">My Family Recipes</router-link>
+              <router-link class="nav-dropdown-link" :to="{ name: 'favorites' }">Favorites</router-link>
+              <router-link class="nav-dropdown-link" :to="{ name: 'myRecipes' }">My Recipes</router-link>
             </div>
           </div>
           <router-link class="nav-link" :to="{ name: 'createRecipe' }">Create Recipe</router-link>
