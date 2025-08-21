@@ -1,56 +1,205 @@
-<template>
-  <div class="create-recipe-bg">
-    <div class="create-recipe-card">
-      <h1 class="create-recipe-title">Create a New Recipe</h1>
-      <p class="create-recipe-desc">Here you will be able to add your own recipe to the collection.</p>
-      <div class="coming-soon">Coming soon...</div>
-    </div>
-  </div>
-</template>
+
 
 <script>
+
+import axios from 'axios';
+import { ref, reactive, computed } from 'vue';
+
+const cuisines = ref([
+	'Italian', 'French', 'Chinese', 'Indian', 'Mexican', 'American', 'Thai', 'Japanese', 'Spanish', 'Greek', 'Other'
+]);
+const diets = ref([
+	"Gluten Free","Ketogenic","Vegetarian","Lacto-Vegetarian","Ovo-Vegetarian","Vegan","Pescetarian","Paleo","Primal","Low FODMAP","Whole30"
+]);
+const intolerancesList = ref([
+	"Dairy","Egg","Gluten","Grain","Peanut","Seafood","Sesame","Shellfish","Soy","Sulfite","Tree Nut","Wheat"
+]);
+
+const showModal = ref(false);
+const loading = ref(false);
+const error = ref("");
+const form = reactive({
+	title: "",
+	image: "",
+	readyInMinutes: null,
+	servings: null,
+	ingredients: [ { name: '', amount: '', unit: '' } ],
+	instructions: "",
+	cuisines: [],
+	diets: [],
+	intolerances: [],
+	vegan: false,
+	vegetarian: false,
+	glutenFree: false
+});
+
+const titleState = computed(() => form.title.trim().length > 0 ? true : null);
+const minutesState = computed(() => form.readyInMinutes > 0 ? true : null);
+const servingsState = computed(() => form.servings > 0 ? true : null);
+const instructionsState = computed(() => form.instructions.trim().length > 0 ? true : null);
+const ingredientsState = computed(() => form.ingredients.length > 0 && form.ingredients.every(i => i.name && i.amount));
+const formValid = computed(() => titleState.value && minutesState.value && servingsState.value && instructionsState.value && ingredientsState.value);
+
+function addIngredient() {
+	form.ingredients.push({ name: '', amount: '', unit: '' });
+}
+function removeIngredient(idx) {
+	if (form.ingredients.length > 1) form.ingredients.splice(idx, 1);
+}
+function resetForm() {
+	form.title = "";
+	form.image = "";
+	form.readyInMinutes = null;
+	form.servings = null;
+	form.ingredients = [ { name: '', amount: '', unit: '' } ];
+	form.instructions = "";
+	form.cuisines = [];
+	form.diets = [];
+	form.intolerances = [];
+	form.vegan = false;
+	form.vegetarian = false;
+	form.glutenFree = false;
+	error.value = "";
+	loading.value = false;
+}
+function onCancel() {
+	showModal.value = false;
+	resetForm();
+}
+
+async function onSubmit() {
+	error.value = "";
+	if (!formValid.value) return;
+	loading.value = true;
+	try {
+		const payload = {
+			title: form.title,
+			readyInMinutes: form.readyInMinutes,
+			ingredients: form.ingredients.map((ingredient) => ingredient.name),
+			instructions: form.instructions,
+			image: form.image || undefined,
+			servings: form.servings || undefined,
+			vegan: form.vegan,
+			vegetarian: form.vegetarian,
+			glutenFree: form.glutenFree,
+		};
+		await axios.post(
+			"http://localhost:3000/user/my-recipes",
+			payload,
+			{ withCredentials: true }
+		);
+		showModal.value = false;
+		resetForm();
+	} catch (err) {
+		if (err.response && err.response.data && err.response.data.message) {
+			error.value = err.response.data.message;
+		} else {
+			error.value = "An error occurred while creating the recipe.";
+		}
+	} finally {
+		loading.value = false;
+	}
+}
+
 export default {
-  name: "CreateRecipePage"
+	name: 'CreateRecipePage',
+		setup() {
+			return {
+				cuisines,
+				diets,
+				intolerancesList,
+				showModal,
+				loading,
+				error,
+				form,
+				titleState,
+				minutesState,
+				servingsState,
+				instructionsState,
+				ingredientsState,
+				formValid,
+				addIngredient,
+				removeIngredient,
+				resetForm,
+				onCancel,
+				onSubmit
+			};
+		}
 };
 </script>
 
-<style scoped>
-.create-recipe-bg {
-  min-height: 80vh;
-  background: linear-gradient(120deg, #f6faf6 60%, #e6f7d9 100%);
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 2.5rem 0;
-}
-.create-recipe-card {
-  background: #fff;
-  border-radius: 2.5rem;
-  max-width: 600px;
-  width: 100%;
-  padding: 2.5rem 2.5rem 2rem 2.5rem;
-  box-shadow: 0 4px 32px 0 rgba(60, 80, 60, 0.10);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.create-recipe-title {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: #222;
-  margin-bottom: 0.5rem;
-}
-.create-recipe-desc {
-  color: #5a6e5a;
-  font-size: 1.15rem;
-  margin-bottom: 2rem;
-}
-.coming-soon {
-  color: #3a6c2f;
-  font-size: 1.3rem;
-  background: #e6f7d9;
-  border-radius: 1.2em;
-  padding: 0.7em 1.5em;
-  font-weight: 600;
-}
-</style>
+<template>
+	<div class="create-recipe-bg">
+		<div class="create-recipe-card">
+			<h1 class="create-recipe-title">Create a New Recipe</h1>
+			<p class="create-recipe-desc">Here you will be able to add your own recipe to the collection.</p>
+			<b-button variant="success" @click="showModal = true">Create Recipe</b-button>
+			<b-modal v-model="showModal" title="Create Recipe" @hide="resetForm" hide-footer>
+				<b-form @submit.prevent="onSubmit">
+					<b-form-group label="Title" label-for="title" :state="titleState">
+						<b-form-input id="title" v-model="form.title" :state="titleState" required />
+						<b-form-invalid-feedback>Title is required.</b-form-invalid-feedback>
+					</b-form-group>
+					<b-form-group label="Image URL" label-for="image">
+						<b-form-input id="image" v-model="form.image" placeholder="https://..." />
+					</b-form-group>
+					<b-form-group label="Ready In Minutes" label-for="readyInMinutes" :state="minutesState">
+						<b-form-input id="readyInMinutes" v-model.number="form.readyInMinutes" type="number" min="1" :state="minutesState" required />
+						<b-form-invalid-feedback>Required and must be a positive number.</b-form-invalid-feedback>
+					</b-form-group>
+					<b-form-group label="Servings" label-for="servings" :state="servingsState">
+						<b-form-input id="servings" v-model.number="form.servings" type="number" min="1" :state="servingsState" required />
+						<b-form-invalid-feedback>Required and must be a positive number.</b-form-invalid-feedback>
+					</b-form-group>
+					<b-form-group label="Ingredients">
+						<div v-for="(ingredient, idx) in form.ingredients" :key="idx" class="d-flex mb-2 align-items-center">
+							<b-form-input v-model="ingredient.name" placeholder="Name" class="me-2" required style="max-width: 120px" />
+							<b-form-input v-model="ingredient.amount" type="number" min="0.01" step="0.01" placeholder="Amount" class="me-2" required style="max-width: 90px" />
+							<b-form-input v-model="ingredient.unit" placeholder="Unit" class="me-2" style="max-width: 90px" />
+							<b-button size="sm" variant="danger" @click="removeIngredient(idx)" v-if="form.ingredients.length > 1">&times;</b-button>
+						</div>
+						<b-button size="sm" variant="outline-success" @click="addIngredient">Add Ingredient</b-button>
+						<b-form-invalid-feedback v-if="!ingredientsState">At least one ingredient is required and all must be filled.</b-form-invalid-feedback>
+					</b-form-group>
+					<b-form-group label="Instructions" label-for="instructions" :state="instructionsState">
+						<b-form-textarea id="instructions" v-model="form.instructions" rows="4" :state="instructionsState" required />
+						<b-form-invalid-feedback>Instructions are required.</b-form-invalid-feedback>
+					</b-form-group>
+					<b-form-group label="Cuisines">
+						<b-form-select v-model="form.cuisines" :options="cuisines" multiple />
+					</b-form-group>
+					<b-form-group label="Diets">
+						<b-form-select v-model="form.diets" :options="diets" multiple />
+					</b-form-group>
+					<b-form-group label="Intolerances">
+						<b-form-select v-model="form.intolerances" :options="intolerancesList" multiple />
+					</b-form-group>
+					<b-form-group label="Dietary Flags">
+						<div class="d-flex gap-3">
+							<b-form-checkbox v-model="form.vegan">Vegan</b-form-checkbox>
+							<b-form-checkbox v-model="form.vegetarian">Vegetarian</b-form-checkbox>
+							<b-form-checkbox v-model="form.glutenFree">Gluten Free</b-form-checkbox>
+						</div>
+					</b-form-group>
+					<b-alert v-if="error" show variant="danger" class="mb-2">{{ error }}</b-alert>
+					<div class="d-flex justify-content-end mt-3">
+						<b-button variant="secondary" @click="onCancel" class="me-2">Cancel</b-button>
+						<b-button variant="success" type="submit" :disabled="loading || !formValid">{{ loading ? 'Saving...' : 'Save' }}</b-button>
+					</div>
+				</b-form>
+			</b-modal>
+		</div>
+	</div>
+</template>
+
+
+
+
+
+
+
+
+
+
+
+
