@@ -19,15 +19,15 @@
 											<img v-if="recipe.prepImage" :src="recipe.prepImage" class="family-recipe-img-prep" :alt="'Preparation steps for ' + recipe.title" />
 										</div>
 										<div class="family-details-row">
-											<section class="family-instructions-collapse always-open">
+											<section class="family-instructions-collapse always-open" dir="rtl" style="text-align:right">
 												<h3>רכיבים</h3>
-												<ul>
+												<ul style="direction:rtl; text-align:right">
 													<li v-for="(ing, idx) in recipe.ingredients" :key="idx">{{ ing }}</li>
 												</ul>
 											</section>
-											<section class="family-instructions-collapse always-open">
+											<section class="family-instructions-collapse always-open" dir="rtl" style="text-align:right">
 												<h3>אופן הכנה</h3>
-												<ol>
+												<ol style="direction:rtl; text-align:right">
 													<li v-for="(step, idx) in recipe.instructions" :key="idx">{{ step }}</li>
 												</ol>
 											</section>
