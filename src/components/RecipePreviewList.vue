@@ -4,7 +4,13 @@
 
     <div class="row">
       <div class="col" v-for="r in internalRecipes" :key="r.id">
-        <RecipePreview class="recipePreview" :recipe="r" />
+        <RecipePreview
+          class="recipePreview"
+          :recipe="r"
+          :id="r.id"
+          :isFavorite="favoritesIds && favoritesIds.has ? favoritesIds.has(r.id) : false"
+          @toggle-favorite="$emit('toggle-favorite', $event)"
+        />
       </div>
     </div>
   </div>
@@ -26,12 +32,17 @@ export default {
     },
     type: {
       type: String,
-      default: 'random', // ברירת מחדל
+      default: 'random',
     },
     recipes: {
       type: Array,
       default: null,
     },
+    favoritesIds: {
+      type: Object,
+      required: false,
+      default: null
+    }
   },
   data() {
     return {

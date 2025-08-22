@@ -89,7 +89,12 @@
         </div>
         <div class="results-grid-modern">
           <div v-for="recipe in results" :key="recipe.id" class="recipe-card-modern">
-            <img v-if="recipe.image" :src="recipe.image" class="recipe-img-modern" alt="Recipe image" />
+            <RecipePreview
+              :recipe="recipe"
+              :id="recipe.id"
+              :isFavorite="favoritesIds.has(recipe.id)"
+              @toggle-favorite="handleToggleFavorite"
+            />
             <div class="recipe-info-modern">
               <h3 class="recipe-title-modern">{{ recipe.title }}</h3>
               <div class="badges-row">
@@ -121,6 +126,9 @@
 
 <script>
 import axios from "axios";
+import { onMounted } from 'vue';
+import RecipePreview from '../components/RecipePreview.vue';
+import store from '../store';
 
 const cuisines = [
   "African","American","British","Cajun","Caribbean","Chinese","Eastern European","European","French","German","Greek","Indian","Irish","Italian","Japanese","Jewish","Korean","Latin American","Mediterranean","Mexican","Middle Eastern","Nordic","Southern","Spanish","Thai","Vietnamese"
@@ -138,6 +146,7 @@ const axiosInstance = axios.create({
 
 export default {
   name: "SearchRecipes",
+  components: { RecipePreview },
   data() {
     return {
       q: "",
@@ -156,6 +165,20 @@ export default {
       showCuisineDropdown: false,
       showDietDropdown: false,
       searchPerformed: false
+    };
+  },
+  setup() {
+    onMounted(() => store.loadFavorites());
+    const handleToggleFavorite = async ({ id }) => {
+      if (store.favoritesIds.has(id)) {
+        await store.removeFavorite(id);
+      } else {
+        await store.addFavorite(id);
+      }
+    };
+    return {
+      favoritesIds: store.favoritesIds,
+      handleToggleFavorite
     };
   },
   methods: {

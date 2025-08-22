@@ -17,10 +17,13 @@
     <div class="d-flex justify-content-end align-items-center px-3 pt-2 pb-0">
       <button
         class="favorite-btn btn btn-link p-0"
-        :class="{ 'text-danger': isFavorite }"
-        :disabled="isFavorite || loading"
-        @click.stop="addToFavorites"
+        :class="{ active: isFavorite }"
+        :aria-pressed="isFavorite"
+        :aria-label="isFavorite ? 'Added to favorites' : 'Add to favorites'"
+        role="button"
+        @click.stop="!isFavorite && $emit('toggle-favorite', { id })"
         :title="isFavorite ? 'Added to favorites' : 'Add to favorites'"
+        :disabled="isFavorite"
       >
         <span v-if="isFavorite">♥</span>
         <span v-else>♡</span>
@@ -40,9 +43,6 @@
 </template>
 
 <script>
-import axios from 'axios';
-import store from '../store';
-import { ref } from 'vue';
 
 export default {
   name: "RecipePreview",
@@ -50,32 +50,15 @@ export default {
     recipe: {
       type: Object,
       required: true
+    },
+    isFavorite: {
+      type: Boolean,
+      required: true
+    },
+    id: {
+      type: [String, Number],
+      required: true
     }
-  },
-  setup(props) {
-    const isFavorite = ref(false);
-    const loading = ref(false);
-
-    // Optionally: check if already favorite on mount (not required for minimal flow)
-
-    async function addToFavorites() {
-      if (isFavorite.value || loading.value) return;
-      loading.value = true;
-      try {
-        await axios.post(
-          store.server_domain + '/user/favorites',
-          { recipeId: props.recipe.id },
-          { withCredentials: true }
-        );
-        isFavorite.value = true;
-      } catch (e) {
-        alert('Failed to add to favorites');
-      } finally {
-        loading.value = false;
-      }
-    }
-
-    return { isFavorite, loading, addToFavorites };
   }
 };
 </script>
@@ -108,11 +91,17 @@ export default {
   border: none;
   outline: none;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color 0.2s, transform 0.1s, opacity 0.2s;
+  color: #888;
 }
-.favorite-btn:disabled {
-  opacity: 0.7;
-  cursor: default;
+.favorite-btn.active {
+  color: #e74c3c;
+  transform: scale(1.15);
+  opacity: 1;
+}
+.favorite-btn:hover {
+  opacity: 0.85;
+  transform: scale(1.1);
 }
 
 .image-container {
