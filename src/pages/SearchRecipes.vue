@@ -81,39 +81,21 @@
       <div v-if="results.length">
         <div class="sort-row-modern">
           <label>Sort by</label>
-          <select v-model="sort" @change="fetchRecipes">
+          <select v-model="sort" @change="sortResults">
             <option value="">None</option>
             <option value="readyInMinutes">Preparation Time</option>
             <option value="popularity">Popularity</option>
           </select>
         </div>
         <div class="results-grid-modern">
-          <div v-for="recipe in results" :key="recipe.id" class="recipe-card-modern">
-            <RecipePreview
-              :recipe="recipe"
-              :id="recipe.id"
-              :isFavorite="favoritesIds.has(recipe.id)"
-              @toggle-favorite="handleToggleFavorite"
-            />
-            <div class="recipe-info-modern">
-              <h3 class="recipe-title-modern">{{ recipe.title }}</h3>
-              <div class="badges-row">
-                <span class="badge-green">{{ recipe.readyInMinutes }} min</span>
-                <span class="badge-light">{{ recipe.servings || 1 }} servings</span>
-                <span class="badge-like">❤ {{ recipe.aggregateLikes }}</span>
-              </div>
-              <div class="badges-row small">
-                <span v-for="c in (recipe.cuisines || [])" :key="c" class="badge-outline">{{ c }}</span>
-                <span v-for="d in (recipe.diets || [])" :key="d" class="badge-outline">{{ d }}</span>
-              </div>
-              <details class="instructions-collapse">
-                <summary>Show instructions</summary>
-                <ol>
-                  <li v-for="s in recipe._instructions || []" :key="s.number">{{ s.step }}</li>
-                </ol>
-              </details>
-            </div>
-          </div>
+          <RecipePreview
+            v-for="recipe in results"
+            :key="recipe.id"
+            :recipe="recipe"
+            :id="recipe.id"
+            :isFavorite="favoritesIds.has(recipe.id)"
+            @toggle-favorite="handleToggleFavorite"
+          />
         </div>
       </div>
       <div v-else-if="!loading && !error && searchPerformed" class="empty-state-modern">
@@ -200,18 +182,13 @@ export default {
         number: this.number,
         cuisine: this.cuisine.length ? this.cuisine.join(",") : undefined,
         diet: this.diet.length ? this.diet.join(",") : undefined,
-        intolerances: this.intolerances.join(",") || undefined,
-        sort: this.sort || undefined
+        intolerances: this.intolerances.join(",") || undefined
       };
       try {
         const { data } = await axiosInstance.get("/recipes/search", { params });
         let results = data.results || [];
-        if (this.sort === "readyInMinutes") {
-          results = results.slice().sort((a, b) => (a.readyInMinutes || 0) - (b.readyInMinutes || 0));
-        } else if (this.sort === "popularity") {
-          results = results.slice().sort((a, b) => (b.aggregateLikes || 0) - (a.aggregateLikes || 0));
-        }
         this.results = results;
+        this.sortResults();
         sessionStorage.setItem(
           "lastSearch",
           JSON.stringify({
@@ -228,6 +205,14 @@ export default {
         this.results = [];
       } finally {
         this.loading = false;
+      }
+    },
+    sortResults() {
+      if (!this.sort) return;
+      if (this.sort === "readyInMinutes") {
+        this.results = this.results.slice().sort((a, b) => (a.readyInMinutes || 0) - (b.readyInMinutes || 0));
+      } else if (this.sort === "popularity") {
+        this.results = this.results.slice().sort((a, b) => (b.aggregateLikes || 0) - (a.aggregateLikes || 0));
       }
     }
   },
