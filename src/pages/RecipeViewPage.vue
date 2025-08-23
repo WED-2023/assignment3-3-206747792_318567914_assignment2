@@ -1,126 +1,342 @@
 <template>
-    <div class="container">
-      <div v-if="recipe">
-        <div class="recipe-header mt-3 mb-4">
-          <h1>{{ recipe.title }}</h1>
-          <img :src="recipe.image" class="center" />
+  <div class="container py-4" v-if="recipe">
+    <article class="recipe-vertical">
+
+      <!-- Title -->
+      <h1 class="title">{{ recipe.title }}</h1>
+
+     
+
+      <!-- Small centered image -->
+      <figure class="thumb">
+        <img :src="recipe.image" :alt="`${recipe.title} photo`" loading="lazy" />
+      </figure>
+
+       <!-- Meta row -->
+      <div class="meta-row">
+        <div class="chips">
+          <span class="chip" :title="`Ready in ${recipe.readyInMinutes} minutes`">⏱ {{ recipe.readyInMinutes }}m</span>
+          <span class="chip" :title="`${formattedLikes} likes`">👍 {{ formattedLikes }}</span>
+          <span v-if="recipe.servings" class="chip" :title="`Servings: ${recipe.servings}`">🍽 {{ recipe.servings }}</span>
         </div>
-        <div class="recipe-body">
-          <div class="wrapper">
-            <div class="wrapped">
-              <div class="mb-3">
-                <div>Ready in {{ recipe.readyInMinutes }} minutes</div>
-                <div>Likes: {{ recipe.aggregateLikes }} likes</div>
-              </div>
-              Ingredients:
-              <ul>
-                <li
-                  v-for="(r, index) in recipe.extendedIngredients"
-                  :key="index + '_' + r.id"
-                >
-                  {{ r.original }}
-                </li>
-              </ul>
-            </div>
-            <div class="wrapped">
-              Instructions:
-              <ol>
-                <li v-for="s in recipe._instructions" :key="s.number">
-                  {{ s.step }}
-                </li>
-              </ol>
-            </div>
-          </div>
-        </div>
-        <!-- <pre>
-        {{ $route.params }}
-        {{ recipe }}
-      </pre
-        > -->
+
+        <button
+          class="fav-btn"
+          :class="{ added: isFavorite }"
+          :disabled="isFavorite"
+          @click="toggleFavorite"
+          :aria-pressed="isFavorite ? 'true' : 'false'"
+          :title="isFavorite ? 'In favorites' : 'Add to favorites'"
+        >
+          <span v-if="isFavorite">♥ In favorites</span>
+          <span v-else>♡ Add to favorites</span>
+        </button>
       </div>
-    </div>
-  </template>
-  
-  <script>
-  export default {
-    data() {
-      return {
-        recipe: null
-      };
-    },
-    async created() {
+
+      <!-- Ingredients -->
+      <section class="card-block">
+        <h2 class="section-title">Ingredients</h2>
+        <ul class="nice-list">
+          <li
+            v-for="(r, index) in recipe.extendedIngredients"
+            :key="index + '_' + (r.id ?? index)"
+          >
+            {{ r.original }}
+          </li>
+        </ul>
+      </section>
+
+      <!-- Instructions -->
+      <section class="card-block">
+        <h2 class="section-title">Instructions</h2>
+        <ol class="steps">
+          <li v-for="s in recipe._instructions" :key="s.number">
+            {{ s.step }}
+          </li>
+        </ol>
+      </section>
+
+    </article>
+  </div>
+</template>
+
+
+<script>
+export default {
+  data() {
+    return {
+      recipe: null
+    };
+  },
+
+  computed: {
+   
+    isFavorite() {
       try {
-        let response;
-        // response = this.$route.params.response;
-  
-        try {
-          response = await this.axios.get(
-            // "https://test-for-3-2.herokuapp.com/recipes/info",
-            this.$root.store.server_domain + "/recipes/info",
-            {
-              params: { id: this.$route.params.recipeId }
-            }
-          );
-  
-          // console.log("response.status", response.status);
-          if (response.status !== 200) this.$router.replace("/NotFound");
-        } catch (error) {
-          console.log("error.response.status", error.response.status);
-          this.$router.replace("/NotFound");
+        const id = this.recipe?.id;
+        const favs = this.$root?.store?.favoritesIds;
+        return !!(id && favs && typeof favs.has === "function" && favs.has(id));
+      } catch {
+        return false;
+      }
+    },
+ 
+    formattedLikes() {
+      const v = this.recipe?.aggregateLikes;
+      const n = typeof v === "number" ? v : Number(v);
+      return Number.isFinite(n) ? n.toLocaleString() : 0;
+    }
+  },
+
+  async created() {
+    try {
+      const recipeId = this.$route.params.recipeId || this.$route.query.id;
+      if (!recipeId) {
+        this.$router.replace("/NotFound");
+        return;
+      }
+
+      let response;
+      try {
+        response = await this.axios.get(
+          `${this.$root.store.server_domain}/recipes/${recipeId}`,
+          { withCredentials: true }
+        );
+        if (response.status !== 200) {
+          if (response.status === 404) this.$router.replace("/NotFound");
           return;
         }
-  
-        let {
-          analyzedInstructions,
-          instructions,
-          extendedIngredients,
-          aggregateLikes,
-          readyInMinutes,
-          image,
-          title
-        } = response.data.recipe;
-  
-        let _instructions = analyzedInstructions
-          .map((fstep) => {
-            fstep.steps[0].step = fstep.name + fstep.steps[0].step;
-            return fstep.steps;
-          })
-          .reduce((a, b) => [...a, ...b], []);
-  
-        let _recipe = {
-          instructions,
-          _instructions,
-          analyzedInstructions,
-          extendedIngredients,
-          aggregateLikes,
-          readyInMinutes,
-          image,
-          title
-        };
-  
-        this.recipe = _recipe;
       } catch (error) {
-        console.log(error);
+        const status = error?.response?.status;
+        if (status === 404) this.$router.replace("/NotFound");
+        return;
+      }
+
+      // ה-backend מחזיר את האובייקט עצמו (לא { recipe: ... })
+      const data = response?.data || {};
+      const {
+        analyzedInstructions,
+        instructions,
+        extendedIngredients,
+        aggregateLikes,
+        readyInMinutes,
+        image,
+        title,
+        id,
+        servings,
+        vegetarian,
+        vegan,
+        glutenFree
+      } = data;
+
+      // הוראות: קודם analyzedInstructions; אם ריק — מפרקים HTML או מחרוזת רגילה
+      let _instructions = [];
+      if (Array.isArray(analyzedInstructions) && analyzedInstructions.length) {
+        _instructions = analyzedInstructions
+          .map((fstep) => {
+            const steps = Array.isArray(fstep?.steps) ? fstep.steps : [];
+            if (steps[0]?.step) steps[0].step = (fstep?.name || "") + steps[0].step;
+            return steps;
+          })
+          .reduce((a, b) => a.concat(b), []);
+      } else if (typeof instructions === "string" && instructions.trim()) {
+        const html = instructions.trim();
+
+        if (/<li[\s>]/i.test(html)) {
+          const liMatches = html.match(/<li[^>]*>[\s\S]*?<\/li>/gi) || [];
+          const decode = (s) =>
+            s
+              .replace(/&amp;/g, "&")
+              .replace(/&lt;/g, "<")
+              .replace(/&gt;/g, ">")
+              .replace(/&quot;/g, '"')
+              .replace(/&#39;|&apos;/g, "'");
+
+          _instructions = liMatches
+            .map((li, idx) => {
+              const text = decode(li.replace(/<\/?[^>]+>/g, "")).trim();
+              return text ? { number: idx + 1, step: text } : null;
+            })
+            .filter(Boolean);
+        } else {
+          const parts = html
+            .split(/\r?\n|\.(?!\d)/)
+            .map((s) => s.trim())
+            .filter(Boolean);
+          _instructions = parts.map((text, idx) => ({ number: idx + 1, step: text }));
+        }
+      }
+
+      // מרכיבים: אם אין extendedIngredients, ננסה data.ingredients
+      let _ingredients = [];
+      if (Array.isArray(extendedIngredients) && extendedIngredients.length) {
+        _ingredients = extendedIngredients;
+      } else if (Array.isArray(data.ingredients) && data.ingredients.length) {
+        _ingredients = data.ingredients.map((ing) => {
+          if (ing.original) return ing;
+          const amount = ing.amount ?? ing.quantity ?? "";
+          const unit = ing.unit ?? ing.measure ?? "";
+          const name = ing.name ?? ing.title ?? "";
+          return {
+            ...ing,
+            original: [amount, unit, name].join(" ").replace(/\s+/g, " ").trim()
+          };
+        });
+      }
+
+      const likesNum =
+        typeof aggregateLikes === "number" ? aggregateLikes : Number(aggregateLikes) || 0;
+
+      this.recipe = {
+        id,
+        title,
+        image,
+        readyInMinutes,
+        aggregateLikes: likesNum,
+        servings,
+        vegetarian,
+        vegan,
+        glutenFree,
+        extendedIngredients: _ingredients,
+        instructions,
+        _instructions,
+        analyzedInstructions
+      };
+
+      // ✨ סימון כ־viewed בשרת (תוספת: בדיקת סטטוס שלא הודפס "הצליח" כשזה נכשל)
+      try {
+        const r = await fetch(`${this.$root.store.server_domain}/user/viewed/${id}`, {
+          method: 'POST',
+          credentials: 'include'
+        });
+        if (!r.ok) {
+          const t = await r.text().catch(() => '');
+          console.warn('POST /user/viewed failed:', r.status, t);
+        } else {
+          console.log(`Recipe ${id} marked as viewed`);
+        }
+      } catch (e) {
+        console.error('Failed to mark recipe as viewed (network):', e);
+      }
+
+    } catch (e) {
+      console.log("created() error:", e);
+    }
+  },
+
+  methods: {
+    async toggleFavorite() {
+      try {
+        if (!this.recipe?.id) return;
+        if (!this.isFavorite && this.$root?.store?.addFavorite) {
+          await this.$root.store.addFavorite(this.recipe.id);
+        }
+      } catch (e) {
+        console.log(e);
       }
     }
-  };
-  </script>
-  
-  <style scoped>
-  .wrapper {
-    display: flex;
   }
-  .wrapped {
-    width: 50%;
-  }
-  .center {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 50%;
-  }
-  /* .recipe-header{
-  
-  } */
-  </style>
-  
+};
+</script>
+
+<style scoped>
+/* Shell */
+.recipe-vertical {
+  max-width: 900px;
+  margin-inline: auto;
+}
+.title {
+  font-size: clamp(1.6rem, 2.4vw, 2.2rem);
+  font-weight: 800;
+  margin: 0 0 .5rem;
+}
+
+/* Meta */
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: .75rem;
+}
+.chips {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+.chip {
+  font-size: .9rem;
+  padding: .35rem .6rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  border: 1px solid #e5e7eb;
+}
+.fav-btn {
+  margin-left: auto;
+  padding: .45rem .8rem;
+  border-radius: 999px;
+  border: 1px solid #ffd4da;
+  background: #fff7f8;
+  font-weight: 600;
+}
+.fav-btn.added { background: #ffe7eb; border-color: #ffb9c5; color: #b0003a; }
+
+/* Image: smaller & centered */
+.thumb {
+  display: grid;
+  place-items: center;
+  margin: .25rem 0 1.25rem;
+}
+.thumb img {
+  width: 100%;
+  max-width: 680px;              /* <<< מקטין את התמונה */
+  aspect-ratio: 4 / 3;           /* יחס נעים ולא ענק */
+  object-fit: cover;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+}
+
+/* Blocks stacked one under another */
+.card-block {
+  background: #fbfbfc;
+  border: 1px solid #eef0f3;
+  border-radius: 14px;
+  padding: 1.1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: .1rem 0 .8rem;
+}
+
+/* Lists */
+.nice-list { margin: 0; padding-left: 1.1rem; }
+.nice-list li { padding: .2rem 0; }
+
+.steps {
+  list-style: none;
+  padding-left: 0;
+  counter-reset: step;
+  margin: 0;
+}
+.steps li {
+  position: relative;
+  padding-left: 2.2rem;
+  margin: .55rem 0;
+}
+.steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 0; top: 0;
+  width: 1.6rem; height: 1.6rem;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: .9rem; font-weight: 700;
+  background: #eaf2ff; border: 1px solid #cfe0ff;
+}
+
+/* Small helper */
+[disabled] { cursor: not-allowed; opacity: .85; }
+</style>

@@ -1,51 +1,75 @@
 <template>
-  <div class="about-page container mx-auto p-6">
+  <div class="about container py-4" dir="ltr">
     <!-- Header -->
-    <h1 class="text-3xl font-bold text-center mb-6">About the Project</h1>
+    <header class="text-center mb-4">
+      <h1 class="display-6 fw-bold mb-2">About the Project</h1>
+    </header>
 
-    <!-- Marketing blurb -->
-    <section class="bg-white shadow-lg rounded-2xl p-6 mb-8">
-      <h2 class="text-xl font-semibold mb-4">Overview</h2>
-      <p class="text-gray-700 leading-relaxed">
-        We are a student development team from Ben-Gurion University, building
-        the <strong>“Grandma's Recipes & More”</strong> application as part of the
-        <strong>Web Development Environments</strong> course. The app helps users manage
-        personal and family recipes, save favorites, and discover new dishes with
-        a smart search experience.
-      </p>
-    </section>
+    <!-- Overview -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="h5 fw-semibold mb-3">Overview</h2>
+        <p class="mb-2">
+          <strong>Grandma’s Recipes &amp; More</strong> is a full-stack recipe web app
+          built for the <strong>Web Development Environments</strong> course at Ben-Gurion University.
+        </p>
+        <p class="mb-2">What users can do:</p>
+        <ul class="mb-3">
+          <li>Explore new recipes from an external API with full details (ingredients, steps, time, likes, diet labels).</li>
+          <li>Save and manage a personal list of favorite recipes.</li>
+          <li>Add and manage <em>Personal Recipes</em>.</li>
+          <li>Add and manage <em>Family Recipes</em> with a story behind them.</li>
+          <li>See the <em>Last Watched Recipes</em> on the home page.</li>
+          <li>Filter search by cuisine, diet, and intolerances.</li>
+        </ul>
+        <p class="mb-2">
+          Tech stack: frontend with <strong>Vue.js</strong>; backend with <strong>Node.js</strong>, <strong>Express</strong>, and <strong>MySQL</strong>.
+        </p>
+        <p class="mb-0">We built it step-by-step:</p>
+        <ul class="mb-0">
+          <li>Write the requirements</li>
+          <li>Build the backend</li>
+          <li>Build the frontend and connect everything</li>
+        </ul>
+      </div>
+    </div>
 
-    <!-- Team -->
-    <section class="bg-white shadow-lg rounded-2xl p-6 mb-8">
-      <h2 class="text-xl font-semibold mb-4">Development Team</h2>
-      <ul class="list-disc list-inside text-gray-700 space-y-1">
-        <li>👩‍💻 Lital Kupchik — Frontend (Vue.js)</li>
-        <li>👨‍💻 Teammate — Backend (Node.js + Express)</li>
-        <li>🛠️ Joint work — API design, MySQL schema, testing & QA</li>
-      </ul>
-    </section>
+    <!-- Development Team -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="h5 fw-semibold mb-3">Development Team</h2>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">• Hadar Knafo</li>
+          <li>• Lital Kupchick</li>
+        </ul>
+      </div>
+    </div>
 
-    <!-- Previous exercises / milestones -->
-    <section class="bg-white shadow-lg rounded-2xl p-6">
-      <h2 class="text-xl font-semibold mb-4">Previous Milestones</h2>
-      <ul class="list-disc list-inside">
-        <li>
-          <RouterLink to="/docs/ex1" class="text-blue-600 hover:underline">
-            3.1 — API Specification (PRD)
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/docs/ex2" class="text-blue-600 hover:underline">
-            3.2 — Backend Implementation (Node.js + Express + MySQL)
-          </RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/docs/ex3" class="text-blue-600 hover:underline">
-            3.3 — Frontend Implementation (Vue.js)
-          </RouterLink>
-        </li>
-      </ul>
-    </section>
+    <!-- Milestones -->
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h5 fw-semibold mb-3">Previous Milestones</h2>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a
+              href="https://github.com/WED-2023/assignment3-2-206747792_318567914_assignment2.git"
+              target="_blank" rel="noopener" class="link-primary text-decoration-none"
+            >
+              3.2 — Backend Implementation
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://github.com/WED-2023/assignment3-3-206747792_318567914_assignment2.git"
+              target="_blank" rel="noopener" class="link-primary text-decoration-none"
+            >
+              3.3 — Frontend Implementation
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -56,8 +80,10 @@ export default {
 </script>
 
 <style scoped>
-.about-page {
-  direction: rtl; /* Keep RTL layout if your site is primarily Hebrew */
-  font-family: "Heebo", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+.about {
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+.card {
+  border-radius: 1rem;
 }
 </style>
