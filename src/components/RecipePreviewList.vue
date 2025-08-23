@@ -8,7 +8,8 @@
           class="recipePreview"
           :recipe="r"
           :id="r.id"
-          :isFavorite="favoritesIds && favoritesIds.has ? favoritesIds.has(r.id) : false"
+          :isFavorite="favoritesIds && favoritesIds.includes ? favoritesIds.includes(r.id) : false"
+          :isPersonal="type === 'my-recipes'"
           @toggle-favorite="$emit('toggle-favorite', $event)"
         />
       </div>

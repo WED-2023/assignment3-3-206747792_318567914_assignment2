@@ -28,6 +28,10 @@ export default {
     const recipes = ref([]);
 
     const handleToggleFavorite = async ({ id }) => {
+      if (!store.username) {
+        alert('You must be logged in to add favorites.');
+        return;
+      }
       if (store.favoritesIds.has(id)) {
         await store.removeFavorite(id);
         recipes.value = recipes.value.filter(r => r.id !== id);
@@ -51,7 +55,7 @@ export default {
 
     return {
       recipes: filteredRecipes,
-      favoritesIds: store.favoritesIds,
+  favoritesIds: store.favoritesIdsArr,
       handleToggleFavorite
     };
   }

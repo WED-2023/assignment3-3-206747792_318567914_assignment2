@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import RecipePreviewList from "../components/RecipePreviewList.vue";
 import LoginForm from "../components/LoginForm.vue";
 import store from '../store';
@@ -87,7 +87,11 @@ export default {
     };
 
     const handleToggleFavorite = async ({ id }) => {
-      if (store.favoritesIds.has(id)) {
+      if (!store.username) {
+        alert('You must be logged in to add favorites.');
+        return;
+      }
+      if (store.favoritesIdsArr.includes(id)) {
         await store.removeFavorite(id);
       } else {
         await store.addFavorite(id);
@@ -99,13 +103,22 @@ export default {
     fetchExploreRecipes();
     fetchLastViewedRecipes();
 
+    // Make favoritesIdsArr reactive in the component
+    const favoritesIds = ref([...store.favoritesIdsArr]);
+    watch(
+      () => store.favoritesIdsArr,
+      (newVal) => {
+        favoritesIds.value = [...newVal];
+      }
+    );
+
     return {
       store: storeObj,
       refreshExplore,
       exploreList,
       lastViewedList,
       onLoginSuccess,
-      favoritesIds: store.favoritesIds,
+      favoritesIds,
       handleToggleFavorite,
       exploreRecipes,
       lastViewedRecipes

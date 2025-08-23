@@ -97,9 +97,13 @@ export default {
       }
 
       let response;
+      const isPersonal = this.$route.query.personal === '1' || this.$route.query.personal === 1;
+      const endpoint = isPersonal
+        ? `${this.$root.store.server_domain}/user/my-recipes/${recipeId}`
+        : `${this.$root.store.server_domain}/recipes/${recipeId}`;
       try {
         response = await this.axios.get(
-          `${this.$root.store.server_domain}/recipes/${recipeId}`,
+          endpoint,
           { withCredentials: true }
         );
         if (response.status !== 200) {
@@ -203,20 +207,24 @@ export default {
         analyzedInstructions
       };
 
-      // ✨ סימון כ־viewed בשרת (תוספת: בדיקת סטטוס שלא הודפס "הצליח" כשזה נכשל)
+      // ✨ סימון כ־viewed בשרת (axios במקום fetch, כדי להבטיח שליחת session)
       try {
-        const r = await fetch(`${this.$root.store.server_domain}/user/viewed/${id}`, {
-          method: 'POST',
-          credentials: 'include'
-        });
-        if (!r.ok) {
-          const t = await r.text().catch(() => '');
-          console.warn('POST /user/viewed failed:', r.status, t);
-        } else {
+        const res = await this.axios.post(
+          `/user/viewed/${id}`,
+          {},
+          { withCredentials: true }
+        );
+        if (res.status === 200) {
           console.log(`Recipe ${id} marked as viewed`);
         }
+        // אם לא 200, לא עושים כלום
       } catch (e) {
-        console.error('Failed to mark recipe as viewed (network):', e);
+        // אם השגיאה היא 401 (Unauthorized) או דומה, מתעלמים בשקט
+        if (e?.response?.status !== 401) {
+          // רק שגיאות אחרות יודפסו
+          // console.error('Failed to mark recipe as viewed (network):', e);
+        }
+        // אחרת, לא עושים כלום
       }
 
     } catch (e) {

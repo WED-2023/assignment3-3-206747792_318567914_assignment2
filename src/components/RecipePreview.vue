@@ -2,7 +2,7 @@
   <div class="card recipe-card text-decoration-none text-dark position-relative">
     <div class="image-container">
       <router-link
-        :to="{ name: 'recipe', params: { recipeId: recipe.id } }"
+        :to="routerLinkTo"
         style="display:block;"
       >
         <img
@@ -38,6 +38,7 @@
         <span v-if="recipe.vegan" title="Vegan">🥦</span>
         <span v-if="recipe.glutenFree" title="Gluten Free">🚫</span>
       </div>
+
     </div>
   </div>
 </template>
@@ -58,112 +59,70 @@ export default {
     id: {
       type: [String, Number],
       required: true
+    },
+    isPersonal: {
+      type: Boolean,
+      default: false
+    }
+  },
+  computed: {
+    routerLinkTo() {
+      if (this.isPersonal) {
+        return { name: 'recipe', params: { recipeId: this.recipe.id }, query: { personal: 1 } };
+      }
+      return { name: 'recipe', params: { recipeId: this.recipe.id } };
     }
   }
 };
 </script>
 
 <style scoped>
-
-.recipe-card {
-  width: 100%;
-  max-width: 320px;
-  min-width: 240px;
-  min-height: 370px;
-  max-height: 420px;
-  margin: 0 auto;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  border-radius: 12px;
-  background: #fff;
-  position: relative;
+.card.recipe-card {
+  transition: box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
 }
-.recipe-card:hover {
-  transform: scale(1.03);
-  box-shadow: 0 4px 16px rgba(74,144,226,0.13);
-}
-.favorite-btn {
-  font-size: 1.7rem;
-  background: none;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  transition: color 0.2s, transform 0.1s, opacity 0.2s;
-  color: #888;
-}
-.favorite-btn.active {
-  color: #e74c3c;
-  transform: scale(1.15);
-  opacity: 1;
-}
-.favorite-btn:hover {
-  opacity: 0.85;
-  transform: scale(1.1);
-}
-
 .image-container {
   position: relative;
-  width: 100%;
-  height: 180px;
-  overflow: hidden;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
 }
-
 .clickable-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: opacity 0.3s ease;
   cursor: pointer;
-  display: block;
+  border-radius: 14px 14px 0 0;
+  object-fit: cover;
+  height: 180px;
+  width: 100%;
 }
-
-.image-container:hover .clickable-image {
-  opacity: 0.8;
-}
-
 .overlay-text {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.image-container:hover .overlay-text {
-  opacity: 1;
-}
-
-.card-body {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 1rem;
-}
-
-.card-title {
-  font-size: 1.15rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  bottom: 8px;
+  right: 12px;
+  background: rgba(255,255,255,0.8);
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 0.9em;
   color: #333;
 }
-.card-text {
-  font-size: 1rem;
-  color: #666;
-  margin-bottom: 0.3rem;
+.favorite-btn {
+  font-size: 1.7em;
+  color: #bbb;
+  transition: color 0.2s;
+  outline: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.favorite-btn.active,
+.favorite-btn[aria-pressed="true"] {
+  color: #e74c3c !important;
+}
+.favorite-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .icons {
-  font-size: 1.2rem;
-  margin-top: 5px;
+  margin-top: 8px;
+  font-size: 1.2em;
 }
 </style>
