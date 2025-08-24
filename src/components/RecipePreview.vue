@@ -15,19 +15,7 @@
       </router-link>
     </div>
     <div class="d-flex justify-content-end align-items-center px-3 pt-2 pb-0">
-      <button
-        class="favorite-btn btn btn-link p-0"
-        :class="{ active: isFavorite }"
-        :aria-pressed="isFavorite"
-        :aria-label="isFavorite ? 'Added to favorites' : 'Add to favorites'"
-        role="button"
-        @click.stop="!isFavorite && $emit('toggle-favorite', { id })"
-        :title="isFavorite ? 'Added to favorites' : 'Add to favorites'"
-        :disabled="isFavorite"
-      >
-        <span v-if="isFavorite">♥</span>
-        <span v-else>♡</span>
-      </button>
+  <FavoriteButton :isFavorite="isFavorite" @toggle-favorite="$emit('toggle-favorite', { id })" />
     </div>
     <div class="card-body">
       <h5 class="card-title">{{ recipe.title }}</h5>
@@ -44,9 +32,10 @@
 </template>
 
 <script>
-
+import FavoriteButton from './FavoriteButton.vue';
 export default {
   name: "RecipePreview",
+  components: { FavoriteButton },
   props: {
     recipe: {
       type: Object,

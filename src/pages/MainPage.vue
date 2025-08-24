@@ -67,7 +67,7 @@ export default {
     };
     const fetchLastViewedRecipes = async () => {
       try {
-        const res = await fetch(store.server_domain + '/recipes/lastViewed', { credentials: 'include' });
+        const res = await fetch(store.server_domain + '/user/lastViewed', { credentials: 'include' });
         const data = await res.json();
         lastViewedRecipes.value = Array.isArray(data) ? data : [];
       } catch (e) {

@@ -20,17 +20,7 @@
           <span v-if="recipe.servings" class="chip" :title="`Servings: ${recipe.servings}`">🍽 {{ recipe.servings }}</span>
         </div>
 
-        <button
-          class="fav-btn"
-          :class="{ added: isFavorite }"
-          :disabled="isFavorite"
-          @click="toggleFavorite"
-          :aria-pressed="isFavorite ? 'true' : 'false'"
-          :title="isFavorite ? 'In favorites' : 'Add to favorites'"
-        >
-          <span v-if="isFavorite">♥ In favorites</span>
-          <span v-else>♡ Add to favorites</span>
-        </button>
+  <FavoriteButton :isFavorite="isFavorite" @toggle-favorite="toggleFavorite" />
       </div>
 
       <!-- Ingredients -->
@@ -62,15 +52,15 @@
 
 
 <script>
+import FavoriteButton from '../components/FavoriteButton.vue';
 export default {
+  components: { FavoriteButton },
   data() {
     return {
       recipe: null
     };
   },
-
   computed: {
-   
     isFavorite() {
       try {
         const id = this.recipe?.id;
@@ -80,14 +70,12 @@ export default {
         return false;
       }
     },
- 
     formattedLikes() {
       const v = this.recipe?.aggregateLikes;
       const n = typeof v === "number" ? v : Number(v);
       return Number.isFinite(n) ? n.toLocaleString() : 0;
     }
   },
-
   async created() {
     try {
       const recipeId = this.$route.params.recipeId || this.$route.query.id;
@@ -95,7 +83,6 @@ export default {
         this.$router.replace("/NotFound");
         return;
       }
-
       let response;
       const isPersonal = this.$route.query.personal === '1' || this.$route.query.personal === 1;
       const endpoint = isPersonal
@@ -115,8 +102,6 @@ export default {
         if (status === 404) this.$router.replace("/NotFound");
         return;
       }
-
-      // ה-backend מחזיר את האובייקט עצמו (לא { recipe: ... })
       const data = response?.data || {};
       const {
         analyzedInstructions,
@@ -132,8 +117,6 @@ export default {
         vegan,
         glutenFree
       } = data;
-
-      // הוראות: קודם analyzedInstructions; אם ריק — מפרקים HTML או מחרוזת רגילה
       let _instructions = [];
       if (Array.isArray(analyzedInstructions) && analyzedInstructions.length) {
         _instructions = analyzedInstructions
@@ -145,7 +128,6 @@ export default {
           .reduce((a, b) => a.concat(b), []);
       } else if (typeof instructions === "string" && instructions.trim()) {
         const html = instructions.trim();
-
         if (/<li[\s>]/i.test(html)) {
           const liMatches = html.match(/<li[^>]*>[\s\S]*?<\/li>/gi) || [];
           const decode = (s) =>
@@ -155,7 +137,6 @@ export default {
               .replace(/&gt;/g, ">")
               .replace(/&quot;/g, '"')
               .replace(/&#39;|&apos;/g, "'");
-
           _instructions = liMatches
             .map((li, idx) => {
               const text = decode(li.replace(/<\/?[^>]+>/g, "")).trim();
@@ -170,8 +151,6 @@ export default {
           _instructions = parts.map((text, idx) => ({ number: idx + 1, step: text }));
         }
       }
-
-      // מרכיבים: אם אין extendedIngredients, ננסה data.ingredients
       let _ingredients = [];
       if (Array.isArray(extendedIngredients) && extendedIngredients.length) {
         _ingredients = extendedIngredients;
@@ -187,10 +166,8 @@ export default {
           };
         });
       }
-
       const likesNum =
         typeof aggregateLikes === "number" ? aggregateLikes : Number(aggregateLikes) || 0;
-
       this.recipe = {
         id,
         title,
@@ -206,8 +183,6 @@ export default {
         _instructions,
         analyzedInstructions
       };
-
-      // ✨ סימון כ־viewed בשרת (axios במקום fetch, כדי להבטיח שליחת session)
       try {
         const res = await this.axios.post(
           `/user/viewed/${id}`,
@@ -217,21 +192,13 @@ export default {
         if (res.status === 200) {
           console.log(`Recipe ${id} marked as viewed`);
         }
-        // אם לא 200, לא עושים כלום
       } catch (e) {
-        // אם השגיאה היא 401 (Unauthorized) או דומה, מתעלמים בשקט
-        if (e?.response?.status !== 401) {
-          // רק שגיאות אחרות יודפסו
-          // console.error('Failed to mark recipe as viewed (network):', e);
-        }
-        // אחרת, לא עושים כלום
+  // intentionally left blank
       }
-
     } catch (e) {
       console.log("created() error:", e);
     }
   },
-
   methods: {
     async toggleFavorite() {
       try {
@@ -279,15 +246,24 @@ export default {
   background: #f1f5f9;
   border: 1px solid #e5e7eb;
 }
-.fav-btn {
+.favorite-btn {
+  font-size: 1.7em;
+  color: #bbb;
+  transition: color 0.2s;
+  outline: none;
+  border: none;
+  background: none;
+  cursor: pointer;
   margin-left: auto;
-  padding: .45rem .8rem;
-  border-radius: 999px;
-  border: 1px solid #ffd4da;
-  background: #fff7f8;
-  font-weight: 600;
 }
-.fav-btn.added { background: #ffe7eb; border-color: #ffb9c5; color: #b0003a; }
+.favorite-btn.active,
+.favorite-btn[aria-pressed="true"] {
+  color: #e74c3c !important;
+}
+.favorite-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* Image: smaller & centered */
 .thumb {
