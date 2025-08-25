@@ -1,8 +1,11 @@
 <template>
   <div class="container mt-4">
-    <div class="row">
+    <header class="main-title-header text-center mb-4">
+      <h1 class="main-title">Grandma’s Recipes &amp; More</h1>
+    </header>
+    <div class="row equal-height-row">
       <!-- Left column: Explore Recipes -->
-      <div class="col-md-8">
+      <div class="col-md-8 column-content">
         <RecipePreviewList
           class="RandomRecipes"
           ref="exploreList"
@@ -17,7 +20,7 @@
       </div>
 
       <!-- Right column: Last Viewed or Login Form -->
-      <div class="col-md-4">
+      <div class="col-md-4 column-content">
         <div v-if="store.username">
           <RecipePreviewList
             class="RandomRecipes"
@@ -130,5 +133,30 @@ export default {
 <style scoped>
 .RandomRecipes {
   margin: 10px 0;
+}
+
+.main-title-header {
+  margin-top: 10px;
+}
+.main-title {
+  font-family: 'Playfair Display', 'Segoe UI', serif;
+  font-size: 2.7rem;
+  font-weight: 700;
+  color: #b77b3b;
+  letter-spacing: 1px;
+  text-shadow: 1px 2px 8px #f3e3c3;
+}
+
+.equal-height-row {
+  display: flex;
+}
+.column-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 500px;
+  /* Adjust min-height as needed */
+  background: #fff;
+  box-sizing: border-box;
 }
 </style>

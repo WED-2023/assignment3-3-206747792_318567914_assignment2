@@ -9,11 +9,11 @@
           @blur="v$.username.$touch()"
         />
         <b-form-invalid-feedback v-if="v$.username.$error">
-          <div v-if="!v$.username.required">Username is required.</div>
-          <div v-else-if="!v$.username.minLength || !v$.username.maxLength">
+          <div v-if="v$.username.required?.$invalid">Username is required.</div>
+          <div v-else-if="v$.username.minLength?.$invalid || v$.username.maxLength?.$invalid">
             Username must be 3–8 characters.
           </div>
-          <div v-else-if="!v$.username.alpha">Username must contain only letters.</div>
+          <div v-else-if="v$.username.alpha?.$invalid">Username must contain only letters.</div>
         </b-form-invalid-feedback>
       </b-form-group>
 
@@ -25,11 +25,11 @@
           @blur="v$.firstName.$touch()"
         />
         <b-form-invalid-feedback v-if="v$.firstName.$error">
-          <div v-if="!v$.firstName.required">First name is required.</div>
-          <div v-else-if="!v$.firstName.minLength || !v$.firstName.maxLength">
+          <div v-if="v$.firstName.required?.$invalid">First name is required.</div>
+          <div v-else-if="v$.firstName.minLength?.$invalid || v$.firstName.maxLength?.$invalid">
             First name must be 3–20 characters.
           </div>
-          <div v-else-if="!v$.firstName.alpha">Only letters allowed.</div>
+          <div v-else-if="v$.firstName.alpha?.$invalid">Only letters allowed.</div>
         </b-form-invalid-feedback>
       </b-form-group>
 
@@ -41,11 +41,11 @@
           @blur="v$.lastName.$touch()"
         />
         <b-form-invalid-feedback v-if="v$.lastName.$error">
-          <div v-if="!v$.lastName.required">Last name is required.</div>
-          <div v-else-if="!v$.lastName.minLength || !v$.lastName.maxLength">
+          <div v-if="v$.lastName.required?.$invalid">Last name is required.</div>
+          <div v-else-if="v$.lastName.minLength?.$invalid || v$.lastName.maxLength?.$invalid">
             Last name must be 3–20 characters.
           </div>
-          <div v-else-if="!v$.lastName.alpha">Only letters allowed.</div>
+          <div v-else-if="v$.lastName.alpha?.$invalid">Only letters allowed.</div>
         </b-form-invalid-feedback>
       </b-form-group>
 
@@ -58,8 +58,8 @@
           @blur="v$.email.$touch()"
         />
         <b-form-invalid-feedback v-if="v$.email.$error">
-          <div v-if="!v$.email.required">Email is required.</div>
-          <div v-else-if="!v$.email.email">Invalid email address.</div>
+          <div v-if="v$.email.required?.$invalid">Email is required.</div>
+          <div v-else-if="v$.email.email?.$invalid">Invalid email address.</div>
         </b-form-invalid-feedback>
       </b-form-group>
 
@@ -85,11 +85,11 @@
           @blur="v$.password.$touch()"
         />
         <b-form-invalid-feedback v-if="v$.password.$error">
-          <div v-if="!v$.password.required">Password is required.</div>
-          <div v-else-if="!v$.password.minLength || !v$.password.maxLength">
+          <div v-if="v$.password.required?.$invalid">Password is required.</div>
+          <div v-else-if="v$.password.minLength?.$invalid || v$.password.maxLength?.$invalid">
             Password must be 5–10 characters.
           </div>
-          <div v-else-if="!v$.password.passwordRequirements">
+          <div v-else-if="v$.password.passwordRequirements?.$invalid">
             Password must contain at least one number and one special character.
           </div>
         </b-form-invalid-feedback>
@@ -104,18 +104,19 @@
           @blur="v$.confirmedPassword.$touch()"
         />
         <b-form-invalid-feedback v-if="v$.confirmedPassword.$error">
-          <div v-if="!v$.confirmedPassword.required">Confirmation is required.</div>
-          <div v-else-if="!v$.confirmedPassword.passwordMatch">
+          <div v-if="v$.confirmedPassword.required?.$invalid">Confirmation is required.</div>
+          <div v-else-if="v$.confirmedPassword.passwordMatch?.$invalid">
             Passwords do not match.
           </div>
         </b-form-invalid-feedback>
       </b-form-group>
 
+      
       <b-button 
         type="submit" 
         variant="success" 
         class="w-100"
-        :disabled="state.isLoading || v$.$invalid"
+        :disabled="state.isLoading"
       >
         <span v-if="state.isLoading">
           <b-spinner small></b-spinner>
@@ -149,7 +150,7 @@
 </template>
 
 <script>
-import { reactive } from 'vue';
+import { reactive, nextTick } from 'vue';
 import { useVuelidate } from '@vuelidate/core';
 import { useRouter } from 'vue-router';
 import {
@@ -164,8 +165,9 @@ import axios from 'axios';
 
 // Custom validator for password requirements
 const passwordRequirements = (value) => {
-  const hasNumber = /[0-9]/.test(value);
-  const hasSpecialChar = /[!@#$%^&*()_\-+=[\]{};':"\\|,.<>/?]/.test(value);
+  const v = value || '';
+  const hasNumber = /[0-9]/.test(v);
+  const hasSpecialChar = /[!@#$%^&*()_\-+=[\]{};':"\\|,.<>/?]/.test(v);
   return hasNumber && hasSpecialChar;
 };
 
@@ -185,112 +187,83 @@ export default {
       isLoading: false,
     });
 
-    // Create validation rules inside setup to access state
-    const passwordMatch = (value) => {
-      return value === state.password;
-    };
+    const passwordMatch = (value) => value === state.password;
 
     const rules = {
-      username: {
-        required,
-        minLength: minLength(3),
-        maxLength: maxLength(8),
-        alpha,
-      },
-      firstName: {
-        required,
-        minLength: minLength(3),
-        maxLength: maxLength(20),
-        alpha,
-      },
-      lastName: {
-        required,
-        minLength: minLength(3),
-        maxLength: maxLength(20),
-        alpha,
-      },
-      email: {
-        required,
-        email,
-      },
-      country: { required },
-      password: {
-        required,
-        minLength: minLength(5),
-        maxLength: maxLength(10),
-        passwordRequirements,
-      },
-      confirmedPassword: {
-        required,
-        passwordMatch: passwordMatch,
-      },
+      username: { required, minLength: minLength(3), maxLength: maxLength(8), alpha },
+      firstName:{ required, minLength: minLength(3), maxLength: maxLength(20), alpha },
+      lastName: { required, minLength: minLength(3), maxLength: maxLength(20), alpha },
+      email:    { required, email },
+      country:  { required },
+      password: { required, minLength: minLength(5), maxLength: maxLength(10), passwordRequirements },
+      confirmedPassword: { required, passwordMatch },
     };
 
     const v$ = useVuelidate(rules, state);
 
-    const register = async () => {
-      console.log('=== REGISTRATION PROCESS STARTED ===');
-      // Prevent multiple submissions
-      if (state.isLoading) {
-        console.log('Already submitting, skipping');
-        return;
-      }
-      console.log('Current form values:', {
-        username: state.username,
-        firstName: state.firstName,
-        lastName: state.lastName,
-        email: state.email,
-        country: state.country,
-        password: state.password,
-        confirmedPassword: state.confirmedPassword
-      });
-      console.log('Password match check:', state.password === state.confirmedPassword);
-      const valid = await v$.value.$validate();
-      console.log('Validation result:', valid);
-      console.log('Validation errors:', v$.value.$errors);
-      if (!valid) {
-        console.log('Validation failed, stopping');
-        console.log('Detailed errors:');
-        let msg = '';
-        if (v$.value.password && v$.value.password.$invalid) {
-          if (!v$.value.password.required) {
-            msg = 'Password is required.';
-          } else if (!v$.value.password.minLength || !v$.value.password.maxLength) {
-            msg = 'Password must be 5–10 characters.';
-          } else if (!v$.value.password.passwordRequirements) {
-            msg = 'Password must contain at least one number and one special character.';
+  /**/  // Field label map
+    const fieldLabels = {
+      username: 'Username',
+      firstName: 'First name',
+      lastName: 'Last name',
+      email: 'Email',
+      country: 'Country',
+      password: 'Password',
+      confirmedPassword: 'Confirm Password',
+    };
+
+  /**/  // Finds the first detailed error message according to Vuelidate rules
+    const firstFieldError = () => {
+      const order = ['username','firstName','lastName','email','country','password','confirmedPassword'];
+      for (const key of order) {
+        const f = v$.value[key];
+        if (!f) continue;
+        if (f.$invalid) {
+          // החזר הודעה מדויקת לפי הכלל שנכשל
+          if (f.required?.$invalid)        return `${fieldLabels[key]} is required.`;
+          if (f.minLength?.$invalid || f.maxLength?.$invalid) {
+            if (key === 'username')  return 'Username must be 3–8 characters.';
+            if (key === 'firstName') return 'First name must be 3–20 characters.';
+            if (key === 'lastName')  return 'Last name must be 3–20 characters.';
+            if (key === 'password')  return 'Password must be 5–10 characters.';
           }
-        } else if (v$.value.confirmedPassword && v$.value.confirmedPassword.$invalid) {
-          if (!v$.value.confirmedPassword.required) {
-            msg = 'Password confirmation is required.';
-          } else if (!v$.value.confirmedPassword.passwordMatch) {
-            msg = 'Passwords do not match.';
-          }
-        } else {
-          msg = 'Please correct the highlighted errors in the form.';
+          if (f.alpha?.$invalid)            return `${fieldLabels[key]} must contain letters only.`;
+          if (f.email?.$invalid)            return 'Please enter a valid email address.';
+          if (f.passwordRequirements?.$invalid)
+            return 'Password must contain at least one number and one special character.';
+          if (f.passwordMatch?.$invalid)    return 'Passwords do not match.';
+          return `Please fix ${fieldLabels[key]}.`;
         }
-        window.alert(msg);
+      }
+      return 'Please correct the highlighted fields.';
+    };
+
+    const focusFirstInvalid = () => {
+      nextTick(() => {
+        const el =
+          document.querySelector('.is-invalid, [aria-invalid="true"]') ||
+          document.querySelector('[data-invalid="true"]');
+        el?.focus?.();
+      });
+    };
+
+    const register = async () => {
+  // Validate on click
+      v$.value.$touch();
+      const valid = await v$.value.$validate();
+
+      if (!valid) {
+        window.alert(firstFieldError());
+        focusFirstInvalid();
         return;
       }
-      // Set loading state
+
+      if (state.isLoading) return;
+
       state.isLoading = true;
       state.submitError = null;
+
       try {
-        console.log('Attempting registration with:', { 
-          username: state.username, 
-          email: state.email, 
-          country: state.country 
-        });
-        console.log('Full request payload:', {
-          username: state.username,
-          firstname: state.firstName,
-          lastname: state.lastName,
-          email: state.email,
-          country: state.country,
-          password: state.password,
-          confirmPassword: state.confirmedPassword,
-        });
-        console.log('Sending request to:', '/Register');
         await axios.post('/Register', {
           username: state.username,
           firstname: state.firstName,
@@ -299,10 +272,10 @@ export default {
           country: state.country,
           password: state.password,
           confirmPassword: state.confirmedPassword,
-          profilePic: '', // Default empty profile pic
+          profilePic: '',
         });
-        console.log('Registration successful');
-        // Clear form data
+
+        // reset & redirect
         state.username = '';
         state.firstName = '';
         state.lastName = '';
@@ -312,60 +285,31 @@ export default {
         state.confirmedPassword = '';
         state.submitError = null;
         state.isLoading = false;
+
         alert('Registration successful! You can now login with your new account.');
         router.push('/login');
       } catch (err) {
-        console.error('Registration error:', err);
-        console.error('Error response:', err.response);
-        console.error('Error message:', err.message);
-        // More detailed error handling
         let errorMessage = 'Unexpected error occurred.';
-        if (err.response) {
-          // Server responded with error status
+        if (err?.response) {
           const status = err.response.status;
           const data = err.response.data;
-          console.log('Server error status:', status);
-          console.log('Server error data:', data);
           if (status === 409) {
             errorMessage = 'Username or email already exists. Please choose different credentials.';
           } else if (status === 400) {
-            // Try to extract more specific error info from server
-            if (typeof data?.message === 'string') {
-              if (data.message.toLowerCase().includes('email')) {
-                errorMessage = 'Email is already in use.';
-              } else if (data.message.toLowerCase().includes('username')) {
-                errorMessage = 'Username is already in use.';
-              } else if (data.message.toLowerCase().includes('password')) {
-                errorMessage = 'Password does not meet requirements.';
-              } else if (data.message.toLowerCase().includes('match')) {
-                errorMessage = 'Passwords do not match.';
-              } else {
-                errorMessage = data.message;
-              }
-            } else {
-              errorMessage = 'Invalid registration data. Please check your inputs.';
-            }
+            errorMessage = (typeof data?.message === 'string' && data.message) ||
+              'Invalid registration data. Please check your inputs.';
           } else if (status === 500) {
-            // Try to extract more specific error info from server
-            const serverMessage = data?.message;
-            if (serverMessage && serverMessage.includes('400')) {
-              errorMessage = 'Server validation error. Please try with a different country or check your input data.';
-            } else {
-              errorMessage = 'Server error occurred. This might be due to external service issues. Please try again later or contact support.';
-            }
+            errorMessage = data?.message || 'Server error occurred. Please try again later.';
           } else {
             errorMessage = data?.message || `Server error (${status}). Please try again.`;
           }
-        } else if (err.request) {
-          // Network error
+        } else if (err?.request) {
           errorMessage = 'Network error. Please check your connection and try again.';
         } else {
-          // Other error
-          errorMessage = err.message || 'Unexpected error occurred.';
+          errorMessage = err?.message || errorMessage;
         }
         state.submitError = errorMessage;
         state.isLoading = false;
-        // Show popup for registration error
         window.alert(errorMessage);
       }
     };

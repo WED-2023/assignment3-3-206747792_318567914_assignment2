@@ -273,8 +273,8 @@ export default {
 }
 .thumb img {
   width: 100%;
-  max-width: 680px;              /* <<< מקטין את התמונה */
-  aspect-ratio: 4 / 3;           /* יחס נעים ולא ענק */
+  max-width: 680px;
+  aspect-ratio: 4 / 3; 
   object-fit: cover;
   border-radius: 14px;
   box-shadow: 0 6px 18px rgba(0,0,0,.08);
