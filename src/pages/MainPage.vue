@@ -1,38 +1,40 @@
 <template>
-  <div class="container mt-4">
-    <header class="main-title-header text-center mb-4">
-      <h1 class="main-title">Grandma’s Recipes &amp; More</h1>
-    </header>
-    <div class="row equal-height-row">
+  <div class="mainpage-bg">
+    <div class="mainpage-title-area">
+      <h1 class="mainpage-title">Simple and Tasty Recipes</h1>
+      <p class="mainpage-desc">Discover delicious recipes for every taste, beautifully presented and easy to make.</p>
+    </div>
+    <div class="mainpage-cols">
       <!-- Left column: Explore Recipes -->
-      <div class="col-md-8 column-content">
+      <div class="mainpage-col mainpage-col-left">
+        <h3 class="mainpage-col-title">Explore these recipes</h3>
         <RecipePreviewList
-          class="RandomRecipes"
+          class="mainpage-cards"
           ref="exploreList"
-          title="Explore This Recipe"
+          :title="''"
           :recipes="exploreRecipes"
           :favoritesIds="favoritesIds"
           @toggle-favorite="handleToggleFavorite"
         />
-        <div class="text-center mt-3">
-          <button class="btn btn-secondary" @click="refreshExplore">More</button>
+        <div class="mainpage-explore-btn-row">
+          <button class="mainpage-explore-btn" @click="refreshExplore">Show 3 new recipes &#8635;</button>
         </div>
       </div>
-
       <!-- Right column: Last Viewed or Login Form -->
-      <div class="col-md-4 column-content">
+      <div class="mainpage-col mainpage-col-right">
         <div v-if="store.username">
+          <h3 class="mainpage-col-title">Last Watched Recipes</h3>
           <RecipePreviewList
-            class="RandomRecipes"
+            class="mainpage-cards"
             ref="lastViewedList"
             type="last-viewed"
-            title="Last Watched Recipes"
+            :title="''"
             :recipes="lastViewedRecipes"
             :favoritesIds="favoritesIds"
             @toggle-favorite="handleToggleFavorite"
           />
         </div>
-        <div v-else class="text-center mt-4">
+        <div v-else class="mainpage-loginform">
           <LoginForm @success="onLoginSuccess" />
         </div>
       </div>
@@ -131,32 +133,109 @@ export default {
 </script>
 
 <style scoped>
-.RandomRecipes {
-  margin: 10px 0;
-}
-
-.main-title-header {
-  margin-top: 10px;
-}
-.main-title {
-  font-family: 'Playfair Display', 'Segoe UI', serif;
-  font-size: 2.7rem;
-  font-weight: 700;
-  color: #b77b3b;
-  letter-spacing: 1px;
-  text-shadow: 1px 2px 8px #f3e3c3;
-}
-
-.equal-height-row {
-  display: flex;
-}
-.column-content {
+.mainpage-bg {
+  min-height: 100vh;
+  background: linear-gradient(120deg, #f6faf6 60%, #e6f7d9 100%);
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 500px;
-  /* Adjust min-height as needed */
+  align-items: center;
+  padding: 0 0 60px 0;
+}
+.mainpage-title-area {
+  text-align: center;
+  margin-top: 40px;
+  margin-bottom: 18px;
+}
+.mainpage-title {
+  font-family: 'Playfair Display', 'Segoe UI', serif;
+  font-size: 3.2rem;
+  font-weight: 800;
+  color: #222;
+  letter-spacing: 1px;
+  margin-bottom: 0.2em;
+  line-height: 1.1;
+}
+.mainpage-desc {
+  color: #5a6e5a;
+  font-size: 1.18rem;
+  margin-bottom: 0.5em;
+}
+.mainpage-cols {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+  gap: 2.5em;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 20px;
+}
+.mainpage-col {
   background: #fff;
-  box-sizing: border-box;
+  border-radius: 2.5em;
+  box-shadow: 0 4px 24px 0 rgba(60, 80, 60, 0.10);
+  padding: 2.5em 2em 2em 2em;
+  min-width: 340px;
+  max-width: 480px;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.mainpage-col-title {
+  color: #3a6c2f;
+  font-size: 1.25em;
+  font-weight: 700;
+  margin-bottom: 1em;
+  margin-top: 0.5em;
+  text-align: center;
+}
+.mainpage-cards {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 2.2em;
+  justify-content: center;
+  margin-bottom: 1.2em;
+}
+.mainpage-explore-btn-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.5em;
+}
+.mainpage-explore-btn {
+  background: #fff;
+  color: #222;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.08em;
+  font-weight: 700;
+  padding: 0.7em 2.2em;
+  box-shadow: 0 2px 12px 0 rgba(60, 80, 60, 0.10);
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+.mainpage-explore-btn:hover {
+  background: #e6f7d9;
+  color: #3a6c2f;
+  box-shadow: 0 4px 24px 0 rgba(60, 80, 60, 0.13);
+}
+.mainpage-loginform {
+  margin: 2.5em auto 0 auto;
+  max-width: 400px;
+  width: 100%;
+}
+@media (max-width: 1100px) {
+  .mainpage-cols {
+    flex-direction: column;
+    gap: 2em;
+    align-items: center;
+  }
+  .mainpage-col {
+    max-width: 98vw;
+    min-width: 0;
+    width: 98vw;
+  }
 }
 </style>

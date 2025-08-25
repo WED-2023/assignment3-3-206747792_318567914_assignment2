@@ -1,18 +1,17 @@
 <template>
-  <div class="container">
-    <h3>{{ title }}</h3>
-
-    <div class="row">
-      <div class="col" v-for="r in internalRecipes" :key="r.id">
-        <RecipePreview
-          class="recipePreview"
-          :recipe="r"
-          :id="r.id"
-          :isFavorite="favoritesIds && favoritesIds.includes ? favoritesIds.includes(r.id) : false"
-          :isPersonal="type === 'my-recipes'"
-          @toggle-favorite="$emit('toggle-favorite', $event)"
-        />
-      </div>
+  <div class="recipe-preview-list">
+    <h3 v-if="title">{{ title }}</h3>
+    <div class="recipe-preview-list-row">
+      <RecipePreview
+        v-for="r in internalRecipes"
+        :key="r.id"
+        class="recipePreview"
+        :recipe="r"
+        :id="r.id"
+        :isFavorite="favoritesIds && favoritesIds.includes ? favoritesIds.includes(r.id) : false"
+        :isPersonal="type === 'my-recipes'"
+        @toggle-favorite="$emit('toggle-favorite', $event)"
+      />
     </div>
   </div>
 </template>
@@ -89,7 +88,22 @@ export default {
 </script>
 
 <style scoped>
-.container {
-  min-height: 400px;
+.recipe-preview-list {
+  width: 100%;
+  min-height: 200px;
+}
+.recipe-preview-list-row {
+  display: flex;
+  flex-direction: row;
+  gap: 2.2em;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+@media (max-width: 900px) {
+  .recipe-preview-list-row {
+    flex-direction: column;
+    gap: 1.2em;
+    align-items: center;
+  }
 }
 </style>

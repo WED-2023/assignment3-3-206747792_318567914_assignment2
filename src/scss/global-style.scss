@@ -1,0 +1,119 @@
+// עיצוב גלובלי מודרני לכל האתר
+// עיצוב גלובלי בגווני ירוק פסטל
+$primary-color: #3a6c2f; // ירוק כהה
+$secondary-color: #f6faf6; // רקע ירוק פסטל בהיר
+$accent-color: #b6e6a7; // ירוק פסטל עז
+$light-green: #e6f7d9; // ירוק פסטל בהיר מאוד
+$danger-color: #e05a5a;
+$success-color: #4caf50;
+$font-stack: 'Segoe UI', 'Arial', sans-serif;
+
+body {
+  font-family: $font-stack;
+  background: linear-gradient(120deg, $secondary-color 60%, $light-green 100%);
+  color: #2a3d2a;
+  margin: 0;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: $primary-color;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+// קישור
+a {
+  color: $primary-color;
+  text-decoration: none;
+  transition: color 0.2s;
+  &:hover {
+    color: darken($primary-color, 10%);
+  }
+}
+button, .btn {
+  background: $accent-color;
+  color: $primary-color;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(58,108,47,0.08);
+  transition: background 0.2s, box-shadow 0.2s;
+  font-weight: 600;
+  &:hover {
+    background: $light-green;
+    box-shadow: 0 4px 16px rgba(58,108,47,0.13);
+  }
+}
+
+input, select, textarea {
+  border: 1.5px solid $light-green;
+  border-radius: 8px;
+  padding: 0.5em 1em;
+  font-size: 1em;
+  margin-bottom: 1em;
+  background: #fff;
+  color: $primary-color;
+  transition: border 0.2s;
+  &:focus {
+    border-color: $primary-color;
+    outline: none;
+  }
+}
+
+.card {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 2px 16px rgba(58,108,47,0.08);
+  padding: 2em;
+  margin: 1.5em 0;
+  transition: box-shadow 0.2s;
+  &:hover {
+    box-shadow: 0 4px 32px rgba(58,108,47,0.13);
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  background: $light-green;
+}
+::-webkit-scrollbar-thumb {
+  background: $accent-color;
+  border-radius: 8px;
+}
+
+// הודעות שגיאה/הצלחה
+.alert-danger {
+  background: #fff0f0;
+  color: $danger-color;
+  border-radius: 1em;
+  padding: 0.7em 1.2em;
+  margin: 1em 0;
+  text-align: center;
+  font-weight: 500;
+}
+.alert-success {
+  background: $light-green;
+  color: $primary-color;
+  border-radius: 1em;
+  padding: 0.7em 1.2em;
+  margin: 1em 0;
+  text-align: center;
+  font-weight: 500;
+}
+
+// Responsive
+@media (max-width: 600px) {
+  body {
+    font-size: 0.98em;
+  }
+  .card {
+    padding: 1em;
+  }
+  button, .btn {
+    font-size: 0.95em;
+    padding: 0.5em 1em;
+  }
+}

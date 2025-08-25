@@ -57,6 +57,7 @@ export default {
 </script>
 
 <style lang="scss">
+@import "@/scss/global-style.scss";
 @import "@/scss/form-style.scss";
 
 #app {

@@ -68,20 +68,36 @@ export default {
 <style scoped>
 .card.recipe-card {
   transition: box-shadow 0.2s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  border-radius: 14px;
+  box-shadow: 0 4px 24px 0 rgba(60, 80, 60, 0.10);
+  border-radius: 2em;
   overflow: hidden;
-  margin-bottom: 20px;
+  margin-bottom: 0;
+  background: #fff;
+  min-width: 220px;
+  max-width: 260px;
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: none;
 }
 .image-container {
   position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f6faf6;
+  border-radius: 2em 2em 0 0;
+  min-height: 150px;
 }
 .clickable-image {
   cursor: pointer;
-  border-radius: 14px 14px 0 0;
+  border-radius: 2em 2em 0 0;
   object-fit: cover;
-  height: 180px;
+  height: 140px;
   width: 100%;
+  box-shadow: 0 1px 6px 0 rgba(60, 80, 60, 0.08);
 }
 .overlay-text {
   position: absolute;
@@ -110,8 +126,31 @@ export default {
   opacity: 0.5;
   cursor: not-allowed;
 }
+.card-body {
+  width: 100%;
+  text-align: center;
+  padding: 1.2em 0.7em 1em 0.7em;
+}
+.card-title {
+  font-family: 'Playfair Display', 'Segoe UI', serif;
+  font-size: 1.15em;
+  font-weight: 700;
+  color: #2a3d2a;
+  margin-bottom: 0.3em;
+}
+.card-text {
+  color: #5a6e5a;
+  font-size: 1em;
+  margin-bottom: 0.2em;
+}
 .icons {
   margin-top: 8px;
   font-size: 1.2em;
+}
+@media (max-width: 900px) {
+  .card.recipe-card {
+    min-width: 90vw;
+    max-width: 98vw;
+  }
 }
 </style>
